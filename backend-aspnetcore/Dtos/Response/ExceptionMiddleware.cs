@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 
 namespace BackendAspNetCore.Dtos.Response;
+
 public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;

@@ -3,15 +3,20 @@ using BackendAspNetCore.Dtos.Sensor;
 using BackendAspNetCore.Mappers;
 using BackendAspNetCore.Models;
 using BackendAspNetCore.Repositories.SensorRepo;
+using BackendAspNetCore.Repositories.SensorLogRepo;
 using BackendAspNetCore.Dtos.Response;
 using BackendAspNetCore.Utils;
 using BackendAspNetCore.RequestBody.Sensor;
 
 namespace BackendAspNetCore.Services.SensorServices;
 
-public class SensorService(ISensorRepository iSensorRepo) : ISensorService
+public class SensorService(
+    ISensorRepository iSensorRepo,
+    ISensorLogRepository iSensorLogRepo
+) : ISensorService
 {
     private readonly ISensorRepository _iSensorRepo = iSensorRepo;
+    private readonly ISensorLogRepository _iSensorLogRepo = iSensorLogRepo;
 
     public async Task<ApiResponse> SaveOrUpdateSensor(AddSensorRequestBody input)
     {
@@ -24,6 +29,7 @@ public class SensorService(ISensorRepository iSensorRepo) : ISensorService
             existSensor.LastUpdatedUtc = DatetimeUtil.GetCurrentUtcDatetime();
             await _iSensorRepo.UpdateSensor(existSensor);
             sensorDto = SensorMapper.ToDto(existSensor);
+            SaveSensorLog(existSensor);
             return ApiResponse<SensorDto>.SuccessResponse(sensorDto, "Sensor has been updated", 200);
         }
         var newSensor = new Sensor
@@ -35,7 +41,18 @@ public class SensorService(ISensorRepository iSensorRepo) : ISensorService
         };
         Sensor sensor = await _iSensorRepo.SaveSensor(newSensor);
         sensorDto = SensorMapper.ToDto(sensor);
+        SaveSensorLog(sensor);
         return ApiResponse<SensorDto>.SuccessResponse(sensorDto, "New sensor has been added", 200);
+    }
+    private async void SaveSensorLog(Sensor sensor)
+    {
+        var newSensorLog = new SensorLog
+        {
+            SensorId = sensor.Id,
+            Temperature = sensor.Temperature,
+            Humidity = sensor.Humidity,
+        };
+        SensorLog sensorLog = await _iSensorLogRepo.SaveSensor(newSensorLog);
     }
     
     public async Task<ApiResponse> GetAllSensor(GetAllSensorRequestBody input)

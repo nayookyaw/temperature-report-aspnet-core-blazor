@@ -6,6 +6,7 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
     public DbSet<Sensor> Sensors => Set<Sensor>();
+    public DbSet<SensorLog> SensorLogs => Set<SensorLog>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

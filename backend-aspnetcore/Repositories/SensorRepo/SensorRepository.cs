@@ -34,14 +34,13 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
             .FirstOrDefaultAsync(s => s.MacAddress == macAddress);
     }
 
-    public async Task<IEnumerable<SensorDto>> GetAllSensor()
+    public async Task<IEnumerable<SensorDto>> GetAllSensor(CancellationToken ct = default)
     {
         return await _db.Sensors
             .AsNoTracking()
-            .Include(s => s.SensorLogs) // Eager load SensorLog
             .AsSplitQuery()
             .OrderBy(s => s.MacAddress)
             .ProjectTo<SensorDto>(_mapper.ConfigurationProvider)
-            .ToListAsync();
+            .ToListAsync(ct);
     }
 }

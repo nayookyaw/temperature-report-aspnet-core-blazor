@@ -1,3 +1,5 @@
+namespace BackendAspNetCore.Dtos.Response;
+
 public class ApiResponse
 {
     public int StatusCode { get; set; }

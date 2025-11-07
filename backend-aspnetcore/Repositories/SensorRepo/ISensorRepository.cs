@@ -9,5 +9,5 @@ public interface ISensorRepository
     public Task<Sensor> SaveSensor(Sensor newSensor);
     public Task<Sensor> UpdateSensor(Sensor sensor);
     public Task<Sensor?> GetSensorByMacAddress(string macAddress);
-    public Task<IEnumerable<SensorDto>> GetAllSensor();
+    public Task<IEnumerable<SensorDto>> GetAllSensor(CancellationToken ct = default);
 }
