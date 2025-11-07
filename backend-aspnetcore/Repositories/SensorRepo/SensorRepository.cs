@@ -27,11 +27,10 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
         return updateSensor;
     }
 
-    public async Task<SensorDto?> GetSensorByMacAddress(string macAddress)
+    public async Task<Sensor?> GetSensorByMacAddress(string macAddress)
     {
         return await _db.Sensors
             .AsNoTracking()
-            .ProjectTo<SensorDto>(_mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(s => s.MacAddress == macAddress);
     }
 
