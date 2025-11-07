@@ -38,6 +38,8 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
     {
         return await _db.Sensors
             .AsNoTracking()
+            .Include(s => s.SensorLogs) // Eager load SensorLog
+            .AsSplitQuery()
             .OrderBy(s => s.MacAddress)
             .ProjectTo<SensorDto>(_mapper.ConfigurationProvider)
             .ToListAsync();

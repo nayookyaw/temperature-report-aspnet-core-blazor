@@ -1,3 +1,5 @@
+using BackendAspNetCore.Dtos.SensorLog;
+
 namespace BackendAspNetCore.Dtos.Sensor;
 public class SensorDto
 {
@@ -5,4 +7,6 @@ public class SensorDto
     public string Temperature { get; set; } = string.Empty;
     public string Humidity { get; set; } = string.Empty;
     public DateTimeOffset LastUpdatedUtc { get; set; }
+
+    public List<SensorLogDto> SensorLogs { get; set; } = new();
 }

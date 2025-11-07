@@ -21,4 +21,6 @@ public class Sensor
 
     [Column(Order = 5)]
     public DateTimeOffset LastUpdatedUtc { get; set; }
+
+    public virtual ICollection<SensorLog> SensorLogs { get; set; } = new List<SensorLog>();
 }
