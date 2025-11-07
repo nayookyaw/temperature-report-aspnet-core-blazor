@@ -1,5 +1,5 @@
-   Nay Oo Kyaw
-   nayookyaw.nok@gmail.com
+      Nay Oo Kyaw
+      nayookyaw.nok@gmail.com
 
 # Temperature Report 
 # Blazor Web Assembly + ASP.NET (.NET Framework Core 9) + MS SQL Starter
@@ -26,5 +26,3 @@
 
 
 ## Notes
-
-- LINQ sorting/paging is implemented in `UsersController`
