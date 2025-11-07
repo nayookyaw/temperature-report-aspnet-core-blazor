@@ -24,8 +24,6 @@ public class SensorService(ISensorRepository iSensorRepo) : ISensorService
             existSensor.LastUpdatedUtc = DatetimeUtil.GetCurrentUtcDatetime();
             await _iSensorRepo.UpdateSensor(existSensor);
             sensorDto = SensorMapper.ToDto(existSensor);
-            Console.WriteLine($"update {input.Temperature}");
-
             return ApiResponse<SensorDto>.SuccessResponse(sensorDto, "Sensor has been updated", 200);
         }
         var newSensor = new Sensor
@@ -42,12 +40,11 @@ public class SensorService(ISensorRepository iSensorRepo) : ISensorService
     
     public async Task<ApiResponse> GetAllSensor(GetAllSensorRequestBody input)
     {
-        IEnumerable<Sensor> sensors = await _iSensorRepo.GetAllSensor();
-        List<SensorDto> sensorList = sensors.Select(s => SensorMapper.ToDto(s)).ToList();
-        if (sensorList.Count == 0)
+        IEnumerable<SensorDto> sensorList = await _iSensorRepo.GetAllSensor();
+        if (!sensorList.Any())
         {
             return ApiResponseFail.FailResponse("No sensor is found", 400);
         }
-        return ApiResponse<List<SensorDto>>.SuccessResponse(sensorList, "Sensor list has been retrieved", 200);
+        return ApiResponse<IEnumerable<SensorDto>>.SuccessResponse(sensorList, "Sensor list has been retrieved", 200);
     }
 }

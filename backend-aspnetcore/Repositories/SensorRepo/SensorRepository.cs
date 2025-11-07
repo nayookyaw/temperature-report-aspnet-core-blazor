@@ -1,13 +1,17 @@
 
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using BackendAspNetCore.Data;
+using BackendAspNetCore.Dtos.Sensor;
 using BackendAspNetCore.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BackendAspNetCore.Repositories.SensorRepo;
 
-public class SensorRepository(AppDbContext db) : ISensorRepository
+public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorRepository
 {
     private readonly AppDbContext _db = db;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<Sensor> SaveSensor(Sensor newSensor)
     {
@@ -23,27 +27,20 @@ public class SensorRepository(AppDbContext db) : ISensorRepository
         return updateSensor;
     }
 
-    public async Task<Sensor?> GetSensorByMacAddress(string macAddress)
+    public async Task<SensorDto?> GetSensorByMacAddress(string macAddress)
     {
         return await _db.Sensors
             .AsNoTracking()
+            .ProjectTo<SensorDto>(_mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(s => s.MacAddress == macAddress);
     }
 
-    public async Task<IEnumerable<Sensor>> GetAllSensor()
+    public async Task<IEnumerable<SensorDto>> GetAllSensor()
     {
-        return await _db.Sensors.AsNoTracking().OrderBy(s => s.MacAddress).ToListAsync();
-        // return await _db.Sensors
-        //     .AsNoTracking()
-        //     .OrderBy(s => s.MacAddress)
-        //     .Select(s => new SensorDto
-        //     {
-        //         MacAddress   = s.MacAddress,
-        //         Temperature  = s.Temperature.ToString(),   // adapt to your types/format
-        //         Humidity     = s.Humidity.ToString(),
-        //         // Example: include a DateTimeOffset in your DTO if you have it
-        //         // LastSeen = s.LastSeen, 
-        //     })
-        //     .ToListAsync(ct);
+        return await _db.Sensors
+            .AsNoTracking()
+            .OrderBy(s => s.MacAddress)
+            .ProjectTo<SensorDto>(_mapper.ConfigurationProvider)
+            .ToListAsync();
     }
 }

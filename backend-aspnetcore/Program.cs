@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+using BackendAspNetCore.Mappers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +65,9 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// ✅ Register AutoMapper (this scans the assembly for all Profile classes)
+builder.Services.AddAutoMapper(typeof(SensorProfile).Assembly);
 
 var app = builder.Build();
 

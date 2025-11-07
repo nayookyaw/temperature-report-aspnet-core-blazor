@@ -2,10 +2,9 @@
       nayookyaw.nok@gmail.com
 
 # Temperature Report 
-# Blazor Web Assembly + ASP.NET (.NET Framework Core 9) + MS SQL Starter
+# Blazor Web Assembly + ASP.NET (.NET Framework Core 9) + MS SQL Server
 
 # Backend
-
 * Migration EF Core Migration
 `dotnet ef migrations add InitialCreate`
 `dotnet ef database update`
