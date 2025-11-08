@@ -1,0 +1,53 @@
+@using Frontend.Models
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+@code {
+    [Parameter] public EventCallback<(double lng, double lat)> OnJumpTo { get; set; }
+
+    string? q;
+    int page = 1;
+    int pageSize = 50;
+    PagedResult<SensorDto>? result;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    async Task Load()
+    {
+        var qEncoded = string.IsNullOrWhiteSpace(q) ? "" : Uri.EscapeDataString(q);
+        var url = $"api/v1/sensor/list?q={qEncoded}&page={page}&pageSize={pageSize}";
+        result = await Http.GetFromJsonAsync<PagedResult<SensorDto>>(url);
+        StateHasChanged();
+    }
+
+    async Task Search(ChangeEventArgs e)
+    {
+        q = e.Value?.ToString();
+        page = 1;
+        await Load();
+    }
+
+    async Task Select(SensorDto s) =>
+        await OnJumpTo.InvokeAsync((s.longitude, s.latitude));
+}
+
+<div class="p-2" style="overflow:auto; height:100%">
+  <input class="w-100" placeholder="Search assets..." @oninput="Search" />
+  <div>
+    @if (result is null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        foreach (var s in result.Items)
+        {
+            <div class="card" style="margin:8px; padding:8px; cursor:pointer" @onclick="@(() => Select(s))">
+                <strong>@s.name</strong><br />
+                <small>MAC: @s.macAddress • SN: @s.serialNumber</small><br />
+                <small>@s.latitude, @s.longitude</small>
+            </div>
+        }
+    }
+  </div>
+</div>
