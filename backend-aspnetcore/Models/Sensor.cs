@@ -4,22 +4,26 @@ namespace BackendAspNetCore.Models;
 
 public class Sensor
 {
-    [Column(Order = 0)]
     public Guid Id { get; set; }
 
-    [Column(Order = 1)]
+    public string Name { get; set; } = string.Empty;
+
     public string MacAddress { get; set; } = string.Empty;
 
-    [Column(Order = 2)]
     public string SerialNumber { get; set; } = string.Empty;
 
-    [Column(Order = 3)]
     public string Temperature { get; set; } = string.Empty;
 
-    [Column(Order = 4)]
     public string Humidity { get; set; } = string.Empty;
 
-    [Column(Order = 5)]
+    public double Latitude { get; set; }
+
+    public double Longitude { get; set; }
+
+    public string? Status { get; set; }
+
+    public DateTimeOffset? LastSeenAt { get; set; }
+
     public DateTimeOffset LastUpdatedUtc { get; set; }
 
     public virtual ICollection<SensorLog> SensorLogs { get; set; } = new List<SensorLog>();

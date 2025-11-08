@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using FluentValidation.AspNetCore;
 using FluentValidation;
 using BackendAspNetCore.Mappers;
+using ZiggyCreatures.Caching.Fusion; // FusionCache
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,9 +53,11 @@ builder.Services.AddVersionedApiExplorer(version =>
 builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
-    p.WithOrigins("http://localhost:5173")
-     .AllowAnyHeader()
-     .AllowAnyMethod()));
+    p.WithOrigins("http://localhost:5000")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials())
+    );
 
 // fluent validation
 builder.Services.AddFluentValidationAutoValidation();
@@ -63,6 +66,11 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 // ✅ Register AutoMapper (this scans the assembly for all Profile classes)
 builder.Services.AddAutoMapper(typeof(SensorProfile).Assembly);
+
+// in-proc memory cache
+builder.Services.AddMemoryCache();
+// FusionCache default instance (so can inject IFusionCache)
+builder.Services.AddFusionCache();
 
 var app = builder.Build();
 
@@ -77,6 +85,9 @@ app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {
+    // Apply migrations & seed demo data (dev only)
+    await SensorSeed.EnsureSeedAsync(app.Services, total: 10);
+    
     app.UseSwagger();
     // Build a Swagger UI tab per API version
     var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();

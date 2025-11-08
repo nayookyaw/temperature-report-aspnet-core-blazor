@@ -7,16 +7,19 @@ using BackendAspNetCore.Repositories.SensorLogRepo;
 using BackendAspNetCore.Dtos.Response;
 using BackendAspNetCore.Utils;
 using BackendAspNetCore.RequestBody.Sensor;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace BackendAspNetCore.Services.SensorServices;
 
 public class SensorService(
     ISensorRepository iSensorRepo,
-    ISensorLogRepository iSensorLogRepo
+    ISensorLogRepository iSensorLogRepo,
+    IFusionCache iFusionCache
 ) : ISensorService
 {
     private readonly ISensorRepository _iSensorRepo = iSensorRepo;
     private readonly ISensorLogRepository _iSensorLogRepo = iSensorLogRepo;
+    private readonly IFusionCache _iFusionCache = iFusionCache;
 
     public async Task<ApiResponse> SaveOrUpdateSensor(AddSensorRequestBody input)
     {
@@ -54,7 +57,7 @@ public class SensorService(
         };
         SensorLog sensorLog = await _iSensorLogRepo.SaveSensor(newSensorLog);
     }
-    
+
     public async Task<ApiResponse> GetAllSensor(GetAllSensorRequestBody input)
     {
         IEnumerable<SensorDto> sensorList = await _iSensorRepo.GetAllSensor();
@@ -64,4 +67,24 @@ public class SensorService(
         }
         return ApiResponse<IEnumerable<SensorDto>>.SuccessResponse(sensorList, "Sensor list has been retrieved", 200);
     }
+    
+    private static string MakeViewportKey(ViewportQuery q)
+    {
+        // Quantize bounds to reduce cache cardinality
+        static double Q(double v) => Math.Round(v, 3);
+        return $"vp:{Q(q.MinLng)},{Q(q.MinLat)},{Q(q.MaxLng)},{Q(q.MaxLat)}:z{q.Zoom}:l{q.Limit}:s:{q.Search?.Trim().ToLowerInvariant()}";
+    }
+
+    public async Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync(ViewportQuery q)
+    {
+        var cacheKey = MakeViewportKey(q);
+        return await _iFusionCache.GetOrSetAsync(cacheKey, async _ =>
+        {
+            var items = await _iSensorRepo.GetSensorsInViewportAsync(q);
+            return items.ToList();
+        });
+    }
+
+    public Task<IEnumerable<SensorDto>> SearchAsync(string q, int limit)
+        => _iSensorRepo.SearchAsync(q, limit);
 }

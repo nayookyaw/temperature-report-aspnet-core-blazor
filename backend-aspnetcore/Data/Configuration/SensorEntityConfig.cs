@@ -15,5 +15,6 @@ public class UserEntityConfig : IEntityTypeConfiguration<Sensor>
 
         // Composite Index
         builder.HasIndex(s => new { s.MacAddress, s.SerialNumber }).IsUnique();
+        builder.HasIndex(x => new { x.Latitude, x.Longitude });
     }
 }
