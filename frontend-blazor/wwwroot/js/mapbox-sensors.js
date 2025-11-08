@@ -102,7 +102,26 @@ window.SensorMap = (function () {
         type: 'circle',
         source: sourceId,
         filter: ['has', 'point_count'],
-        paint: { 'circle-radius': 18 }
+        paint: {
+        // radius grows with cluster size
+        'circle-radius': [
+          'step',
+          ['get', 'point_count'],
+          16,   // < 100
+          100,  22,   // 100–749
+          750,  28    // 750+
+        ],
+        // colors per size bucket
+        'circle-color': [
+          'step',
+          ['get', 'point_count'],
+          '#3b82f6',  // <100   (blue-500)
+          100, '#f59e0b', // 100–749 (amber-500)
+          750, '#ef4444'  // 750+   (red-500)
+        ],
+        'circle-stroke-color': '#ffffff',
+        'circle-stroke-width': 1
+      }
       });
 
       map.addLayer({
@@ -112,7 +131,11 @@ window.SensorMap = (function () {
         filter: ['has', 'point_count'],
         layout: {
           'text-field': ['get', 'point_count_abbreviated'],
-          'text-size': 12
+          'text-size': 12,
+          'text-allow-overlap': true
+        },
+        paint: {
+          'text-color': '#ffffff'  // make sure it contrasts the bubble
         }
       });
 
@@ -121,7 +144,12 @@ window.SensorMap = (function () {
         type: 'circle',
         source: sourceId,
         filter: ['!', ['has', 'point_count']],
-        paint: { 'circle-radius': 6 }
+        paint: {
+          'circle-radius': 6,
+          'circle-color': '#11b4da',
+          'circle-stroke-width': 1,
+          'circle-stroke-color': '#ffffff'
+        }
       });
 
       // Safe interactions (NO Blazor directives in HTML)
