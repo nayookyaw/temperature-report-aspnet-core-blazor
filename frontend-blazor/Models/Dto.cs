@@ -5,6 +5,7 @@ public record SensorDto(
     string Name,
     string MacAddress,
     string SerialNumber,
+    string Status,
     double Latitude,
     double Longitude,
     double Temperature,

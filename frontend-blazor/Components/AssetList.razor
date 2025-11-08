@@ -5,15 +5,13 @@
 
 @code {
     [Parameter] public EventCallback<(double lng, double lat)> OnJumpTo { get; set; }
-
     string? q;
     int page = 1;
     int pageSize = 50;
     PagedResult<SensorDto>? result;
     bool loading = false;
-
     protected override async Task OnInitializedAsync() => await Load();
-
+    
     async Task Load()
     {
         loading = true;
@@ -24,16 +22,16 @@
         loading = false;
         StateHasChanged();
     }
-
     async Task Search(ChangeEventArgs e)
     {
         q = e.Value?.ToString();
         page = 1;
         await Load();
     }
-
-    async Task Select(SensorDto s) =>
+    async Task Select(SensorDto s)
+    {
         await OnJumpTo.InvokeAsync((s.Longitude, s.Latitude));
+    }
 }
 
 <div class="asset-panel">
@@ -58,20 +56,20 @@
     else
     {
         <div class="asset-list">
-            @foreach (var s in result.Items)
+            @foreach (SensorDto sensor in result.Items)
             {
-                <button class="asset-card" @onclick="() => Select(s)">
-                <div class="asset-title">@s.Name</div>
+                <button class="asset-card" @onclick="() => Select(sensor)">
+                <div class="asset-title">@sensor.Name</div>
                 <div class="asset-meta">
                     <span class="badge">MAC</span>
-                    <span class="mono">@s.MacAddress</span>
+                    <span class="mono">@sensor.MacAddress</span>
                     <span class="dot">•</span>
                     <span class="badge">SN</span>
-                    <span class="mono">@s.SerialNumber</span>
+                    <span class="mono">@sensor.SerialNumber</span>
                 </div>
                 <div class="asset-coords">
                     <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
-                    <span class="mono">@s.Longitude, @s.Latitude</span>
+                    <span class="mono">@sensor.Longitude, @sensor.Latitude</span>
                 </div>
                 </button>
             }

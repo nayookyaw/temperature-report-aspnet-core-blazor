@@ -14,8 +14,6 @@
   protected override async Task OnAfterRenderAsync(bool firstRender)
   {
     if (!firstRender) return;
-
-    // Initialize the viewport-driven map exactly once.
     // SensorMap will automatically fetch /api/v1/sensors/viewport when the map moves/zooms.
     string? backendBase = Config["BackendBase"] ?? "";
     await JS.InvokeVoidAsync("SensorMap.init", "map", new
@@ -28,7 +26,7 @@
 
   private async Task JumpTo((double lng, double lat) pt)
   {
-    // Smooth pan/zoom to the asset from the left panel
+    // Smooth pan/zoom to the sensor from the left panel
     await JS.InvokeVoidAsync("SensorMap.flyTo", pt.lng, pt.lat);
   }
 }
