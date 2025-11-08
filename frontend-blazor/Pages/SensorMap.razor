@@ -1,0 +1,84 @@
+
+@using Microsoft.JSInterop
+@using System.Net.Http.Json
+@inject IConfiguration Config
+
+@page "/sensors/map"
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<div class="layout">
+  <div class="left">
+    <div class="search">
+      <input @bind="query" @bind:event="oninput" placeholder="Search for sensors..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px" />
+    </div>
+    <div class="list">
+      @if (searching) {
+        <div style="padding:8px">Searching...</div>
+      }
+      @foreach (var s in results)
+      {
+        <div class="item" @onclick="() => Select(s)">
+          <div style="font-weight:600">@s.Name</div>
+          <div style="font-size:12px;color:#555">@s.MacAddress</div>
+          <div style="font-size:12px;color:#777">@s.Status</div>
+        </div>
+      }
+    </div>
+  </div>
+  <div id="map"></div>
+</div>
+
+@code {
+    private string query = string.Empty;
+    private List<SensorDto> results = new();
+    private bool searching = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            string? backendBase = Config["BackendBase"] ?? "";
+            await JS.InvokeVoidAsync("SensorMap.init", "map", new {
+                backendBase,
+                center = new []{ 174.7633, -36.8485 },
+                zoom = 5
+            });
+            await Load();
+        }
+    }
+
+    private async Task Load()
+    {
+        searching = true;
+        StateHasChanged();
+        string? backendBase = Config["BackendBase"] ?? "";
+        string? url = $"{backendBase}/api/v1/sensors/search?q={Uri.EscapeDataString(query)}&limit=50";
+        List<SensorDto>? data = await Http.GetFromJsonAsync<List<SensorDto>>(url);
+        results = data ?? new();
+        searching = false;
+        StateHasChanged();
+    }
+
+    private async Task Select(SensorDto s)
+    {
+        await JS.InvokeVoidAsync("SensorMap.flyTo", s.Longitude, s.Latitude, 15);
+    }
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        query = e.Value?.ToString() ?? string.Empty;
+        await Load();
+    }
+
+    public class SensorDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string MacAddress { get; set; } = string.Empty;
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public string? Status { get; set; }
+        public DateTimeOffset? LastSeenAt { get; set; }
+    }
+}

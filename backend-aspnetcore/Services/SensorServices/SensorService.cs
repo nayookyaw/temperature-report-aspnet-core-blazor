@@ -55,7 +55,7 @@ public class SensorService(
             Temperature = sensor.Temperature,
             Humidity = sensor.Humidity,
         };
-        SensorLog sensorLog = await _iSensorLogRepo.SaveSensor(newSensorLog);
+        await _iSensorLogRepo.SaveSensor(newSensorLog);
     }
 
     public async Task<ApiResponse> GetAllSensor(GetAllSensorRequestBody input)

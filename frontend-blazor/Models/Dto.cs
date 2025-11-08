@@ -1,15 +1,15 @@
 namespace Frontend.Models;
 
 public record SensorDto(
-    string id,
-    string macAddress,
-    string serialNumber,
-    string name,
-    double latitude,
-    double longitude,
-    double temperature,
-    double humidity,
-    string updatedAt
+    string Id,
+    string Name,
+    string MacAddress,
+    string SerialNumber,
+    double Latitude,
+    double Longitude,
+    double Temperature,
+    double Humidity,
+    string UpdatedAt
 );
 
 public record PagedResult<T>(

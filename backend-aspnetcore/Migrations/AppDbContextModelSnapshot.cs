@@ -28,9 +28,8 @@ namespace BackendAspNetCore.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Humidity")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("Humidity")
+                        .HasColumnType("float");
 
                     b.Property<DateTimeOffset?>("LastSeenAt")
                         .HasColumnType("datetimeoffset");
@@ -59,9 +58,8 @@ namespace BackendAspNetCore.Migrations
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Temperature")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("Temperature")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 
@@ -88,16 +86,14 @@ namespace BackendAspNetCore.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Humidity")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("Humidity")
+                        .HasColumnType("float");
 
                     b.Property<Guid>("SensorId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Temperature")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("Temperature")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
 

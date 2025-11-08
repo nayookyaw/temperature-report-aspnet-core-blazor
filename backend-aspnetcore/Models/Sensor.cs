@@ -12,9 +12,9 @@ public class Sensor
 
     public string SerialNumber { get; set; } = string.Empty;
 
-    public string Temperature { get; set; } = string.Empty;
+    public double  Temperature { get; set; }
 
-    public string Humidity { get; set; } = string.Empty;
+    public double  Humidity { get; set; }
 
     public double Latitude { get; set; }
 

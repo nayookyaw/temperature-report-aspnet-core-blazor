@@ -16,6 +16,7 @@
     {
         var qEncoded = string.IsNullOrWhiteSpace(q) ? "" : Uri.EscapeDataString(q);
         var url = $"api/v1/sensor/list?q={qEncoded}&page={page}&pageSize={pageSize}";
+        @* var url = $"api/v1/sensors/list?q={qEncoded}&page={page}&pageSize={pageSize}"; *@
         result = await Http.GetFromJsonAsync<PagedResult<SensorDto>>(url);
         StateHasChanged();
     }
@@ -28,7 +29,7 @@
     }
 
     async Task Select(SensorDto s) =>
-        await OnJumpTo.InvokeAsync((s.longitude, s.latitude));
+        await OnJumpTo.InvokeAsync((s.Longitude, s.Latitude));
 }
 
 <div class="p-2" style="overflow:auto; height:100%">
@@ -42,10 +43,10 @@
     {
         foreach (var s in result.Items)
         {
-            <div class="card" style="margin:8px; padding:8px; cursor:pointer" @onclick="@(() => Select(s))">
-                <strong>@s.name</strong><br />
-                <small>MAC: @s.macAddress • SN: @s.serialNumber</small><br />
-                <small>@s.latitude, @s.longitude</small>
+            <div class="card" style="margin:8px; padding:8px; cursor:pointer" @onclick="() => Select(s)">
+                <strong>@s.Name</strong><br />
+                <small>MAC: @s.MacAddress • SN: @s.SerialNumber</small><br />
+                <small>@s.Longitude, @s.Latitude</small>
             </div>
         }
     }

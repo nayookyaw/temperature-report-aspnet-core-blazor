@@ -52,8 +52,8 @@ builder.Services.AddVersionedApiExplorer(version =>
 // Wire Swagger options per version
 builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 
-builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
-    p.WithOrigins("http://localhost:5000")
+builder.Services.AddCors(option => option.AddDefaultPolicy(p =>
+    p.WithOrigins("http://localhost:5000", "http://localhost:5173")
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials())

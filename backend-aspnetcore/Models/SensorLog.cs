@@ -4,8 +4,8 @@ public class SensorLog
 {
     public Guid Id { get; set; }
     public Guid SensorId { get; set; }
-    public string Temperature { get; set; } = string.Empty;
-    public string Humidity { get; set; } = string.Empty;
+    public double Temperature { get; set; }
+    public double Humidity { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 
     // lazy-loaded for sensor

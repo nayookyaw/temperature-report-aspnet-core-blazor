@@ -1,5 +1,40 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Sensor Tracker</title><link href="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.css" rel="stylesheet"/>
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script></head>
-<body><div id="app">Loading...</div><script src="_framework/blazor.webassembly.js"></script>
-<script src="js/mapboxInterop.js"></script><script>window.__MAPBOX_TOKEN__="pk.eyJ1IjoibmF5b29reWF3IiwiYSI6ImNtZzk5eHQ1azBoMXUyc3Bzcm9jZHJrNWEifQ.japIuzm9Wn1lUW00Mnrd5g";</script></body></html>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Sensors Map</title>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        html, body { height:100%; margin:0; }
+        #app { height:100%; }
+        .layout {
+            display:grid;
+            grid-template-columns: 380px 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .left {
+            border-right: 1px solid #ddd;
+            display:flex; flex-direction:column;
+        }
+        .left .search { padding: 10px; }
+        .left .list { overflow:auto; }
+        #map { width:100%; height:100%; }
+        .item { padding:10px; cursor:pointer; border-bottom:1px solid #eee; }
+        .item:hover { background:#f7f7f7; }
+    </style>
+</head>
+<body>
+    <div id="app">Loading...</div>
+
+    <script>
+      window.__MAPBOX_TOKEN__ = 'pk.eyJ1IjoibmF5b29reWF3IiwiYSI6ImNtZzk5eHQ1azBoMXUyc3Bzcm9jZHJrNWEifQ.japIuzm9Wn1lUW00Mnrd5g';
+    </script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
+    <script src="/js/mapbox-sensors.js"></script>
+    <script src="/js/mapboxInterop.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

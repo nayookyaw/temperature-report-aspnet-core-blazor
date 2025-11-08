@@ -4,6 +4,12 @@
 # Temperature Report 
 # Blazor Web Assembly + ASP.NET (.NET Framework Core 9) + MS SQL Server
 
+# Dependencies Installation
+`dotnet restore`
+
+# For publish/build WASM
+`dotnet workload install wasm-tools`
+
 # Backend
 * Migration EF Core Migration
 `dotnet tool install --global dotnet-ef`
