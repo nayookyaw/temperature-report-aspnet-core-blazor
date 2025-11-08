@@ -70,19 +70,44 @@ public class SensorService(
     
     private static string MakeViewportKey(ViewportQuery q)
     {
-        // Quantize bounds to reduce cache cardinality
-        static double Q(double v) => Math.Round(v, 3);
-        return $"vp:{Q(q.MinLng)},{Q(q.MinLat)},{Q(q.MaxLng)},{Q(q.MaxLat)}:z{q.Zoom}:l{q.Limit}:s:{q.Search?.Trim().ToLowerInvariant()}";
+        static double Q(double v) => Math.Round(v, 3); // keep some precision, but not too coarse
+        var s = (q.Search ?? "").Trim().ToLowerInvariant();
+
+        return $"vp:min({Q(q.MinLng)},{Q(q.MinLat)})"
+            + $":max({Q(q.MaxLng)},{Q(q.MaxLat)})"
+            + $":z{q.Zoom}"
+            + $":l{q.Limit}"
+            + $":s:{s}";
     }
 
     public async Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync(ViewportQuery q)
     {
         var cacheKey = MakeViewportKey(q);
-        return await _iFusionCache.GetOrSetAsync(cacheKey, async _ =>
-        {
+
+        // var options = new FusionCacheEntryOptions()
+        // .SetDuration(TimeSpan.FromSeconds(5))               // short TTL for live map
+        // .SetFailSafe(true)                                   // optional: tolerate transient failures
+        // .SetJitterMaxDuration(TimeSpan.FromSeconds(2));      // avoid stampedes
+        
+        // return await _iFusionCache.GetOrSetAsync(cacheKey, async ctx =>
+        //     {
+        //         var list = (await _iSensorRepo.GetSensorsInViewportAsync(q)).ToList();
+
+        //         // IMPORTANT: don’t cache empty viewport results
+        //         if (list.Count == 0)
+        //         {
+        //             // FusionCache doesn’t have a “SkipCache” flag; the simplest pattern:
+        //             // return without using cache by overriding the entry duration to zero
+        //             ctx.Options.SetDuration(TimeSpan.Zero);
+        //         }
+
+        //         return list;
+        // }, options);
+        // return await _iFusionCache.GetOrSetAsync(cacheKey, async _ =>
+        // {
             var items = await _iSensorRepo.GetSensorsInViewportAsync(q);
             return items.ToList();
-        });
+        // });
     }
 
     public Task<IEnumerable<SensorDto>> SearchAsync(string q, int limit)

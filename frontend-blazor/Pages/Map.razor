@@ -1,24 +1,34 @@
 @page "/"
-@inject HttpClient Http
 @using Microsoft.JSInterop
-@using System.Net.Http.Json
+@inject IJSRuntime JS
+@inject IConfiguration Config
 
-<div style="display:grid; grid-template-columns: 360px 1fr; height:100vh;">
-  <div style="border-right:1px solid #ddd;">
+<div class="map-layout">
+  <div class="left-pane">
     <Frontend.Components.AssetList OnJumpTo="JumpTo" />
   </div>
-  <div id="map" style="height:100%;"></div>
+  <div id="map" class="map-pane"></div>
 </div>
+
 @code {
-  [Inject] IJSRuntime JS { get; set; } = default!;
-  protected override async Task OnAfterRenderAsync(bool firstRender) {
-    if (firstRender) {
-      await JS.InvokeVoidAsync("mapboxInterop.initMap","map",null,null);
-      var geo = await Http.GetFromJsonAsync<object>("api/v1/sensor/geojson?take=10000");
-      await JS.InvokeVoidAsync("mapboxInterop.setData", geo);
-    } 
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (!firstRender) return;
+
+    // Initialize the viewport-driven map exactly once.
+    // SensorMap will automatically fetch /api/v1/sensors/viewport when the map moves/zooms.
+    string? backendBase = Config["BackendBase"] ?? "";
+    await JS.InvokeVoidAsync("SensorMap.init", "map", new
+    {
+      backendBase,
+      center = new[] { 174.7633, -36.8485 }, // Auckland
+      zoom = 5
+    });
   }
-  private async Task JumpTo((double lng, double lat) pt) { 
-    await JS.InvokeVoidAsync("mapboxInterop.flyTo", pt.lng, pt.lat); 
+
+  private async Task JumpTo((double lng, double lat) pt)
+  {
+    // Smooth pan/zoom to the asset from the left panel
+    await JS.InvokeVoidAsync("SensorMap.flyTo", pt.lng, pt.lat);
   }
 }

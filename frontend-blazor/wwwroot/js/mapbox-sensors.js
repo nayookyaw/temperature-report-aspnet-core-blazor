@@ -35,7 +35,8 @@ window.SensorMap = (function () {
       limit: 10000
     });
 
-    const url = `${backendBase}/api/v1/sensors/viewport?${params.toString()}`;
+    const url = `${backendBase}/v1/sensors/viewport?${params.toString()}`;
+    // console.log (url)
 
     try {
       const res = await fetch(url, { signal: inflight.signal });
@@ -45,14 +46,13 @@ window.SensorMap = (function () {
       }
       const items = await res.json();
 
-      // Expecting camelCase from ASP.NET Core (default JSON naming policy)
       const features = Array.isArray(items) ? items.map(it => ({
         type: 'Feature',
         properties: {
-          id: it.id,
-          title: it.name,
-          mac: it.macAddress,
-          status: it.status || ''
+          id: it.Id,
+          title: it.Name,
+          mac: it.MacAddress,
+          status: it.Status || ''
         },
         geometry: {
           type: 'Point',
@@ -78,7 +78,7 @@ window.SensorMap = (function () {
   }
 
   function init(containerId, options) {
-    backendBase = (options.backendBase || '').replace(/\/+$/, ''); // trim trailing /
+    backendBase = (options.backendBase || '')?.replace(/\/+$/, ''); // trim trailing /
     mapboxgl.accessToken = window.__MAPBOX_TOKEN__;
     map = new mapboxgl.Map({
       container: containerId,
@@ -181,6 +181,8 @@ window.SensorMap = (function () {
 
     // Debounce to keep things snappy
     map.on('moveend', debouncedFetchViewport);
+    map.on('load', () => console.log('Mapbox: load fired'));
+    map.on('error', (e) => console.error('Mapbox error:', e && e.error));
   }
 
   function flyTo(lng, lat, zoom) {
