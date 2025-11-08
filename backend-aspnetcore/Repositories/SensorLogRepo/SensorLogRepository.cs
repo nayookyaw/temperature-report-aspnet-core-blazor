@@ -3,7 +3,7 @@ using BackendAspNetCore.Models;
 
 namespace BackendAspNetCore.Repositories.SensorLogRepo;
 
-public class SensorLogRepo(AppDbContext db) : ISensorLogRepository
+public class SensorLogRepository(AppDbContext db) : ISensorLogRepository
 {
     private readonly AppDbContext _db = db;
     public async Task<SensorLog> SaveSensor(SensorLog newSensorLog)

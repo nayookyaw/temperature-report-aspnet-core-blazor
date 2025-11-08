@@ -5,3 +5,4 @@ out/
 app.db
 node_modules/
 .env
+._.DS_Store

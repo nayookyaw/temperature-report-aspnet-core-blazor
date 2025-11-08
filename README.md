@@ -6,15 +6,17 @@
 
 # Backend
 * Migration EF Core Migration
-`dotnet ef migrations add InitialCreate`
+`dotnet tool install --global dotnet-ef`
+
+* Sync migrations for the first time
+ `dotnet ef migrations add SyncModel_20251108`
+
+`dotnet ef migrations add InitialCreate` (run this comment only there is no files in Migration folder)
 `dotnet ef database update`
 
 * Run the backend
 `dotnet build`
 `dotnet run`
-
-* Testing 
-`dotnet new xunit -n BackendAspNetCore.Tests -o backend-aspnetcore/Tests`
 
 # Dependencies
 - Testing - Moq + xUnit
