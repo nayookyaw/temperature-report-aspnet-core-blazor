@@ -1,3 +1,4 @@
+
 @using Frontend.Models
 @using System.Net.Http.Json
 @inject HttpClient Http
@@ -9,15 +10,18 @@
     int page = 1;
     int pageSize = 50;
     PagedResult<SensorDto>? result;
+    bool loading = false;
 
     protected override async Task OnInitializedAsync() => await Load();
 
     async Task Load()
     {
+        loading = true;
+        StateHasChanged();
         var qEncoded = string.IsNullOrWhiteSpace(q) ? "" : Uri.EscapeDataString(q);
         var url = $"api/v1/sensor/list?q={qEncoded}&page={page}&pageSize={pageSize}";
-        @* var url = $"api/v1/sensors/list?q={qEncoded}&page={page}&pageSize={pageSize}"; *@
         result = await Http.GetFromJsonAsync<PagedResult<SensorDto>>(url);
+        loading = false;
         StateHasChanged();
     }
 
@@ -32,23 +36,45 @@
         await OnJumpTo.InvokeAsync((s.Longitude, s.Latitude));
 }
 
-<div class="p-2" style="overflow:auto; height:100%">
-  <input class="w-100" placeholder="Search assets..." @oninput="Search" />
-  <div>
-    @if (result is null)
+<div class="asset-panel">
+    <div class="asset-toolbar">
+        <input class="asset-search" placeholder="Search assets..." @oninput="Search" />
+    </div>
+
+    @if (result is null || loading)
     {
-        <p>Loading...</p>
+        <div class="asset-empty">
+            <div class="skeleton-line" style="width:70%"></div>
+            <div class="skeleton-line" style="width:55%"></div>
+            <div class="skeleton-line" style="width:60%"></div>
+        </div>
+    }
+    else if (result.Items == null || result.Items.Count == 0)
+    {
+        <div class="asset-empty">
+            <p>No assets found.</p>
+        </div>
     }
     else
     {
-        foreach (var s in result.Items)
-        {
-            <div class="card" style="margin:8px; padding:8px; cursor:pointer" @onclick="() => Select(s)">
-                <strong>@s.Name</strong><br />
-                <small>MAC: @s.MacAddress • SN: @s.SerialNumber</small><br />
-                <small>@s.Longitude, @s.Latitude</small>
-            </div>
-        }
+        <div class="asset-list">
+            @foreach (var s in result.Items)
+            {
+                <button class="asset-card" @onclick="() => Select(s)">
+                <div class="asset-title">@s.Name</div>
+                <div class="asset-meta">
+                    <span class="badge">MAC</span>
+                    <span class="mono">@s.MacAddress</span>
+                    <span class="dot">•</span>
+                    <span class="badge">SN</span>
+                    <span class="mono">@s.SerialNumber</span>
+                </div>
+                <div class="asset-coords">
+                    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+                    <span class="mono">@s.Longitude, @s.Latitude</span>
+                </div>
+                </button>
+            }
+        </div>
     }
-  </div>
 </div>
