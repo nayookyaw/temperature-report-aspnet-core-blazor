@@ -5,6 +5,7 @@ window.SensorMap = (function () {
   let lastKey = '';
   let inflight = null;
   let debounceTimer = null;
+  let selectedId = null;
 
   function makeKey(b, z) {
     // Quantize to reduce fetch churn
@@ -58,6 +59,7 @@ window.SensorMap = (function () {
 
       return {
         type: 'Feature',
+        id, // feature id (for selected point)
         properties: { id, name, mac, status, serial, temperature, humidity, lastSeen },
         geometry: { type: 'Point', coordinates: [it.Longitude ?? it.longitude, it.Latitude ?? it.latitude] }
       };
@@ -97,7 +99,8 @@ window.SensorMap = (function () {
         data: { type: 'FeatureCollection', features: [] },
         cluster: true,
         clusterMaxZoom: 14,
-        clusterRadius: 50
+        clusterRadius: 50,
+        promoteId: 'id',
       });
 
       map.addLayer({
@@ -148,9 +151,24 @@ window.SensorMap = (function () {
         source: sourceId,
         filter: ['!', ['has', 'point_count']],
         paint: {
-          'circle-radius': 6,
-          'circle-color': 'rgba(218, 171, 17, 1)',
-          'circle-stroke-width': 1,
+          'circle-radius': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            8, // bigger when selected
+            6
+          ],
+          'circle-color': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            '#ef4444', // ✅ red when selected
+            'rgba(218, 171, 17, 1)' // default color
+          ],
+          'circle-stroke-width': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            2,
+            1
+          ],
           'circle-stroke-color': '#ffffff'
         }
       });
@@ -169,6 +187,15 @@ window.SensorMap = (function () {
       map.on('click', 'unclustered-point', (e) => {
         const f = e.features && e.features[0];
         if (!f) return;
+
+        const fid = f.id ?? f.properties?.id;
+        // clear previous
+        if (selectedId != null) {
+          map.setFeatureState({ source: sourceId, id: selectedId }, { selected: false });
+        }
+        // set new
+        selectedId = fid;
+        map.setFeatureState({ source: sourceId, id: selectedId }, { selected: true });
 
         const [lng, lat] = f.geometry.coordinates;
         const p = f.properties || {};
@@ -241,6 +268,15 @@ window.SensorMap = (function () {
       map.on('mouseleave', 'unclustered-point', () => map.getCanvas().style.cursor = '');
 
       fetchViewport();
+    });
+
+    // if user clicks on map, and didn't hit an unclustered point, clear selected point selection
+    map.on('click', (e) => {
+      const hit = map.queryRenderedFeatures(e.point, { layers: ['unclustered-point'] });
+      if (hit.length === 0 && selectedId != null) {
+        map.setFeatureState({ source: sourceId, id: selectedId }, { selected: false });
+        selectedId = null;
+      }
     });
 
     // Debounce to keep things snappy
