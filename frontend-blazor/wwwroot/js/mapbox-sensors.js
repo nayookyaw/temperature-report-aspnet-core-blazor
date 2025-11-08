@@ -46,19 +46,22 @@ window.SensorMap = (function () {
       }
       const items = await res.json();
 
-      const features = Array.isArray(items) ? items.map(it => ({
+      const features = Array.isArray(items) ? items.map(it => {
+      const id = it.Id ?? it.id;
+      const name = it.Name ?? it.name ?? 'Sensor';
+      const mac = it.MacAddress ?? it.macAddress ?? '';
+      const status = it.Status ?? it.status ?? 'Unknown';
+      const serial = it.SerialNumber ?? it.serialNumber ?? '';
+      const temperature = it.Temperature ?? it.temperature ?? null;
+      const humidity = it.Humidity ?? it.humidity ?? null;
+      const lastSeen = it.LastSeenAt ?? it.lastSeenAt ?? null;
+
+      return {
         type: 'Feature',
-        properties: {
-          id: it.Id,
-          title: it.Name,
-          mac: it.MacAddress,
-          status: it.Status || ''
-        },
-        geometry: {
-          type: 'Point',
-          coordinates: [it.longitude, it.latitude]
-        }
-      })) : [];
+        properties: { id, name, mac, status, serial, temperature, humidity, lastSeen },
+        geometry: { type: 'Point', coordinates: [it.Longitude ?? it.longitude, it.Latitude ?? it.latitude] }
+      };
+    }) : [];
 
       const src = map.getSource(sourceId);
       const geojson = { type: 'FeatureCollection', features };
@@ -115,7 +118,7 @@ window.SensorMap = (function () {
         'circle-color': [
           'step',
           ['get', 'point_count'],
-          '#3b82f6',  // <100   (blue-500)
+          'rgba(246, 59, 246, 1)',  // <100   (blue-500)
           100, '#f59e0b', // 100–749 (amber-500)
           750, '#ef4444'  // 750+   (red-500)
         ],
@@ -146,7 +149,7 @@ window.SensorMap = (function () {
         filter: ['!', ['has', 'point_count']],
         paint: {
           'circle-radius': 6,
-          'circle-color': '#11b4da',
+          'circle-color': 'rgba(218, 171, 17, 1)',
           'circle-stroke-width': 1,
           'circle-stroke-color': '#ffffff'
         }
@@ -166,36 +169,69 @@ window.SensorMap = (function () {
       map.on('click', 'unclustered-point', (e) => {
         const f = e.features && e.features[0];
         if (!f) return;
-        const [lng, lat] = f.geometry.coordinates;
-        const title = f.properties?.title || '';
-        const mac = f.properties?.mac || '';
-        const status = f.properties?.status || '';
 
-        // Plain HTML (no @onclick). We'll attach a JS listener.
-        const id = `sensor-btn-${f.properties.id}`;
+        const [lng, lat] = f.geometry.coordinates;
+        const p = f.properties || {};
+        const title = p.name || 'Sensor';
+        const mac = p.mac || '';
+        const status = (p.status || 'Unknown').toString();
+        const serial = p.serial || '';
+        const temp = p.temperature ?? null;
+        const hum = p.humidity ?? null;
+        const lastSeen = p.lastSeen || '';
+
+        // Map status -> badge class
+        const statusCls =
+          /ok|online|active|healthy/i.test(status) ? 'ok' :
+          /warn|degrad|unstable/i.test(status) ? 'warn' :
+          /err|down|offline|alarm|fault/i.test(status) ? 'err' : 'unknown';
+
+        const id = `sensor-${p.id || Math.random().toString(36).slice(2)}`;
+
         const html = `
-          <div style="min-width:200px">
-            <div style="font-weight:600">${title}</div>
-            <div><small>MAC: ${mac}</small></div>
-            <div><small>Status: ${status}</small></div>
-            <button id="${id}" type="button" style="margin-top:6px">Fly here</button>
+          <div class="sensor-popup">
+            <div class="sp-header">
+              <div class="sp-title">${escapeHtml(title)}</div>
+              <div class="sp-right">
+                <span class="sp-badge ${statusCls}">${escapeHtml(status)}</span>
+                <button id="${id}-close" class="sp-x" aria-label="Close">×</button>
+              </div>
+            </div>
+
+            <div class="sp-grid">
+              <div class="lbl">MAC</div><div>${escapeHtml(mac) || '-'}</div>
+              <div class="lbl">Serial</div><div>${escapeHtml(serial) || '-'}</div>
+              <div class="lbl">Temp</div><div>${fmtVal(temp, '°C')}</div>
+              <div class="lbl">Humidity</div><div>${fmtVal(hum, '%')}</div>
+              <div class="lbl">Last seen</div><div>${fmtTime(lastSeen) || '-'}</div>
+              <div class="lbl">Coords</div><div>${lng.toFixed(5)}, ${lat.toFixed(5)}</div>
+            </div>
+
+            <div class="sp-actions">
+              <button id="${id}-details" class="sp-btn primary">Details</button>
+            </div>
           </div>
         `;
 
-        new mapboxgl.Popup()
+        new mapboxgl.Popup({ closeButton: false, offset: 10, anchor: 'bottom' })
           .setLngLat([lng, lat])
           .setHTML(html)
           .addTo(map);
 
-        // Attach JS click handler safely
-        // Delay a tick to ensure DOM exists
+        // Wire up actions
         setTimeout(() => {
-          const btn = document.getElementById(id);
-          if (btn) {
-            btn.addEventListener('click', () => {
-              flyTo(lng, lat, 15);
-            });
-          }
+          const fly = document.getElementById(`${id}-fly`);
+          const det = document.getElementById(`${id}-details`);
+          if (fly) fly.addEventListener('click', () => flyTo(lng, lat, 15));
+          if (det) det.addEventListener('click', () => {
+            window.dispatchEvent(new CustomEvent('sensor:details', { detail: { id: p.id } }));
+          });
+          const x   = document.getElementById(`${id}-close`);
+          if (x) x.addEventListener('click', () => {
+            // find the nearest popup container and remove it
+            const el = x.closest('.mapboxgl-popup');
+            if (el && el.parentNode) el.parentNode.removeChild(el);
+          });
         }, 0);
       });
 
@@ -211,6 +247,29 @@ window.SensorMap = (function () {
     map.on('moveend', debouncedFetchViewport);
     map.on('load', () => console.log('Mapbox: load fired'));
     map.on('error', (e) => console.error('Mapbox error:', e && e.error));
+  }
+
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function fmtVal(v, unit) {
+    if (v == null || v === '') return '-';
+    const n = Number(v);
+    return Number.isFinite(n) ? `${n}${unit}` : escapeHtml(String(v));
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleString();
+    } catch { return ''; }
   }
 
   function flyTo(lng, lat, zoom) {

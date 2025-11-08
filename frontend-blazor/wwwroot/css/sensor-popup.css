@@ -1,0 +1,112 @@
+/* ---------------- SENSOR POPUP (Modern UI) ---------------- */
+.sensor-popup {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-width: 260px;
+  max-width: 320px;
+  border-radius: 12px;
+  padding: 4px;
+}
+
+/* Header */
+/* header layout: title on left, badge + close on right */
+.sensor-popup .sp-header { 
+  display:flex; 
+  align-items:left; 
+  justify-content:flex-start; 
+  gap:35px; 
+}
+.sensor-popup .sp-right { 
+  display:flex;
+  justify-content: flex-start;
+  align-items:left;
+  gap:1px; 
+}
+
+/* compact, aligned close button */
+.sensor-popup .sp-x {
+  width: 22px; height: 22px; line-height: 20px;
+  text-align: center;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+.sensor-popup .sp-x:hover {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+/* Status badge */
+.sensor-popup .sp-badge {
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  color: #fff;
+  text-transform: capitalize;
+}
+.sensor-popup .sp-badge.ok { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.sensor-popup .sp-badge.warn { background: linear-gradient(135deg, #fbbf24, #f59e0b); color:#111; }
+.sensor-popup .sp-badge.err { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.sensor-popup .sp-badge.unknown { background: #9ca3af; }
+
+/* Grid */
+.sensor-popup .sp-grid {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 4px 10px;
+  font-size: 12px;
+  margin: 6px 0 10px;
+}
+.sensor-popup .sp-grid .lbl { color: #6b7280; }
+
+/* Actions */
+.sensor-popup .sp-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.sensor-popup .sp-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+/* Primary button */
+.sensor-popup .sp-btn.primary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+.sensor-popup .sp-btn.primary:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+/* Secondary (ghost) button */
+.sensor-popup .sp-btn.ghost {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+}
+.sensor-popup .sp-btn.ghost:hover {
+  background: #f3f4f6;
+}
+
+/* tighten popup default padding */
+.mapboxgl-popup-content { 
+  padding: 10px 12px 12px; 
+  border-radius: 12px; 
+  text-align: left;
+}
+
