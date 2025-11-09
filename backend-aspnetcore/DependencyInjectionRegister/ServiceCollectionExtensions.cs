@@ -7,7 +7,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection BindApplicationServices(this IServiceCollection services)
     {
-        // 1) Scan all app assemblies that start with your root name
+        // Scan all app assemblies that start with your root name
         var root = "BackendAspNetCore"; // <-- root namespace
         var entry = Assembly.GetEntryAssembly()!;
         var assemblies = new List<Assembly> { entry };
@@ -21,7 +21,7 @@ public static class ServiceCollectionExtensions
             }
         }
 
-        // 2) Limit to Services/Repositories namespaces (and their sub-namespaces)
+        // Limit to Services/Repositories namespaces (and their sub-namespaces)
         bool IsTargetNamespace(string? ns) =>
             ns is not null &&
             (ns == $"{root}.Services" || ns.StartsWith($"{root}.Services.") ||

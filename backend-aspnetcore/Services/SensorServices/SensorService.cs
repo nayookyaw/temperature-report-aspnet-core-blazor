@@ -87,31 +87,27 @@ public class SensorService(
         var zoom = input.Zoom;
         var limit = input.Limit;
         var search = input.Search ?? "";
-        
+
         var cacheKey = MakeViewportKey(search, minLng, minLat, maxLng, maxLat, zoom, limit);
 
-        // var options = new FusionCacheEntryOptions()
-        // .SetDuration(TimeSpan.FromSeconds(5))               // short TTL for live map
-        // .SetFailSafe(true)                                   // optional: tolerate transient failures
-        // .SetJitterMaxDuration(TimeSpan.FromSeconds(2));      // avoid stampedes
-        
-        // return await _iFusionCache.GetOrSetAsync(cacheKey, async ctx =>
-        //     {
-        //         var list = (await _iSensorRepo.GetSensorsInViewportAsync(q)).ToList();
+        var options = new FusionCacheEntryOptions()
+            .SetDuration(TimeSpan.FromSeconds(60))   // short TTL for live map freshness
+            .SetFailSafe(true);                     // use stale data if DB fails
 
-        //         // IMPORTANT: don’t cache empty viewport results
-        //         if (list.Count == 0)
-        //         {
-        //             // FusionCache doesn’t have a “SkipCache” flag; the simplest pattern:
-        //             // return without using cache by overriding the entry duration to zero
-        //             ctx.Options.SetDuration(TimeSpan.Zero);
-        //         }
+        var cached = await _iFusionCache.TryGetAsync<IEnumerable<SensorDto>>(cacheKey);
+        if (cached.HasValue)
+        {
+            Console.WriteLine("Cache hit  ✅ ✅ ✅ ✅");
+            return ApiResponse<IEnumerable<SensorDto>>.SuccessResponse(
+                cached.Value,
+                "Retrieved from cache",
+                200
+            );
+        }
 
-        //         return list;
-        // }, options);
-        // return await _iFusionCache.GetOrSetAsync(cacheKey, async _ =>
-
+        Console.WriteLine("Cache miss ❌, querying DB...");
         var sensorList = await _iSensorRepo.GetSensorsInViewportAsync(minLng, minLat, maxLng, maxLat, zoom, limit, search);
+        await _iFusionCache.SetAsync(cacheKey, sensorList, options);
         return ApiResponse<IEnumerable<SensorDto>>.SuccessResponse(
             sensorList,
             "Sensor list in viewport has been retrieved",

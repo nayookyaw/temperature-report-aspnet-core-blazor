@@ -1,13 +1,14 @@
 
 using BackendAspNetCore.Models;
 using Microsoft.EntityFrameworkCore;
+using BackendAspNetCore.Geo;
 
 namespace BackendAspNetCore.Data;
 
 public static class SensorSeed
 {
     // Call this once in Program.cs during dev if you want demo data.
-    public static async Task EnsureSeedAsync(IServiceProvider sp, int total = 10)
+    public static async Task EnsureSeedAsync(IServiceProvider sp, int total = 1000)
     {
         using var scope = sp.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -26,6 +27,10 @@ public static class SensorSeed
         {
             var lat = minLat + rnd.NextDouble() * (maxLat - minLat);
             var lng = minLng + rnd.NextDouble() * (maxLng - minLng);
+
+            if (!NzLand.IsOnLand(lat, lng))
+                continue; // reject ocean
+                
             items.Add(new Sensor
             {
                 Id = Guid.NewGuid(),

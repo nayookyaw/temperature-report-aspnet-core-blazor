@@ -34,16 +34,6 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
         return updateSensor;
     }
 
-    // public async Task<IEnumerable<SensorDto>> GetAllSensor(CancellationToken ct = default)
-    // {
-    //     return await _db.Sensors
-    //         .AsNoTracking()
-    //         .AsSplitQuery()
-    //         .OrderBy(s => s.MacAddress)
-    //         .ProjectTo<SensorDto>(_mapper.ConfigurationProvider)
-    //         .ToListAsync(ct);
-    // }
-
     public async Task<(IEnumerable<SensorDto> Items, long TotalCount)> SearchSensorListAsync
     (
         string? searchText, int page, int pageSize, CancellationToken ct = default

@@ -65,7 +65,7 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-// ✅ Register AutoMapper (this scans the assembly for all Profile classes)
+// Register AutoMapper (this scans the assembly for all Profile classes)
 builder.Services.AddAutoMapper(typeof(SensorProfile).Assembly);
 
 // in-proc memory cache
@@ -87,7 +87,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate(); // <-- creates DB if missing, then applies migrations
+    db.Database.Migrate(); // creates DB if missing, then applies migrations
 }
 
 app.UseCors();
@@ -95,7 +95,7 @@ app.UseCors();
 if (app.Environment.IsDevelopment())
 {
     // Apply migrations & seed demo data (dev only)
-    await SensorSeed.EnsureSeedAsync(app.Services, total: 10);
+    await SensorSeed.EnsureSeedAsync(app.Services, total: 10000);
     
     app.UseSwagger();
     // Build a Swagger UI tab per API version
