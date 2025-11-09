@@ -1,3 +1,4 @@
+@using Frontend.Constants
 @using Frontend.Dtos
 @using Frontend.Services.SensorServiceApi
 @inject ISensorApiClient SensorApi
@@ -6,8 +7,8 @@
     [Parameter] public EventCallback<(double lng, double lat)> OnJumpTo { get; set; }
 
     string? searchText;
-    int page = 1;
-    int pageSize = 50;
+    int page = AppConstants.DEFAULT_PAGE;
+    int pageSize = AppConstants.DEFAULT_PAGE_SIZE;
     PagedResult<SensorDto>? sensorList;
     bool loading = false;
     string? error;
@@ -43,7 +44,7 @@
     async Task Search(ChangeEventArgs e)
     {
         searchText = e.Value?.ToString();
-        page = 1;
+        page = AppConstants.DEFAULT_PAGE;
         await Load();
     }
 
