@@ -17,7 +17,8 @@
 * Sync migrations for the first time
  `dotnet ef migrations add SyncModel_20251108` <br>
 
-`dotnet ef migrations add InitialCreate` (run this comment only there is no files in Migration folder) <br>
+`dotnet ef migrations add InitialCreate` <br>
+(run this comment only there is no files in Migration folder) <br>
 `dotnet ef database update` <br>
 
 * Run the backend
