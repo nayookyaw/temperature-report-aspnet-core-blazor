@@ -1,5 +1,4 @@
-namespace Frontend.Models;
-
+namespace Frontend.Dtos;
 public record SensorDto(
     string Id,
     string Name,
@@ -11,11 +10,4 @@ public record SensorDto(
     double Temperature,
     double Humidity,
     string UpdatedAt
-);
-
-public record PagedResult<T>(
-    IReadOnlyList<T> Items,
-    int Page,
-    int PageSize,
-    long TotalCount
 );

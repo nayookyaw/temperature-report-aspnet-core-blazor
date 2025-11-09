@@ -1,5 +1,5 @@
 // Minimal Mapbox + cluster + viewport fetcher for Blazor interop (Blazor-safe: no @onclick in HTML)
-window.SensorMap = (function () {
+window.SensorMapbox = (function () {
   let map, sourceId = 'sensors';
   let backendBase = '';
   let lastKey = '';

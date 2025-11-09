@@ -1,4 +1,4 @@
-using Frontend.Models;
+using Frontend.Dtos;
 
 namespace Frontend.Services.SensorServiceApi;
 

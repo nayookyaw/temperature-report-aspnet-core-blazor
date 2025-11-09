@@ -1,4 +1,4 @@
-@using Frontend.Models
+@using Frontend.Dtos
 @using Frontend.Services.SensorServiceApi
 @inject ISensorApiClient SensorApi
 
@@ -8,7 +8,7 @@
     string? searchText;
     int page = 1;
     int pageSize = 50;
-    PagedResult<SensorDto>? result;
+    PagedResult<SensorDto>? sensorList;
     bool loading = false;
     string? error;
     CancellationTokenSource? _cts;
@@ -26,12 +26,12 @@
 
         try
         {
-            result = await SensorApi.SearchSensorList(searchText, page, pageSize, _cts.Token);
+            sensorList = await SensorApi.SearchSensorList(searchText, page, pageSize, _cts.Token);
         }
-        catch (Exception ex)
+        catch (Exception except)
         {
-            error = ex.Message;
-            result = new PagedResult<SensorDto>(Array.Empty<SensorDto>(), page, pageSize, 0);
+            error = except.Message;
+            sensorList = new PagedResult<SensorDto>(Array.Empty<SensorDto>(), page, pageSize, 0);
         }
         finally
         {
@@ -72,7 +72,7 @@
             <p style="color:#b00020;">@error</p>
         </div>
     }
-    else if (result is null || result.Items is null || result.Items.Count == 0)
+    else if (sensorList is null || sensorList.Items is null || sensorList.Items.Count == 0)
     {
         <div class="sensor-empty">
             <p>No sensors found.</p>
@@ -81,7 +81,7 @@
     else
     {
         <div class="sensor-list">
-            @foreach (SensorDto sensor in result.Items)
+            @foreach (SensorDto sensor in sensorList.Items)
             {
                 <button class="sensor-card" @onclick="() => Select(sensor)">
                     <div class="sensor-title">@sensor.Name</div>

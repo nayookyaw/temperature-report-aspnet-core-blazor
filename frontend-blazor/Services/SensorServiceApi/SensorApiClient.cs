@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using Frontend.Models;
+using Frontend.Dtos;
 
 namespace Frontend.Services.SensorServiceApi;
 
