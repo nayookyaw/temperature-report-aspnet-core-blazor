@@ -113,17 +113,17 @@ window.SensorMap = (function () {
         'circle-radius': [
           'step',
           ['get', 'point_count'],
-          16,   // < 100
-          100,  22,   // 100–749
-          750,  28    // 750+
+          16,
+          100,  22,
+          750,  28
         ],
         // colors per size bucket
         'circle-color': [
           'step',
           ['get', 'point_count'],
-          'rgba(246, 59, 246, 1)',  // <100   (blue-500)
-          100, '#f59e0b', // 100–749 (amber-500)
-          750, '#ef4444'  // 750+   (red-500)
+          'rgba(246, 59, 246, 1)',
+          100, '#f59e0b',
+          750, '#ef4444'
         ],
         'circle-stroke-color': '#ffffff',
         'circle-stroke-width': 1

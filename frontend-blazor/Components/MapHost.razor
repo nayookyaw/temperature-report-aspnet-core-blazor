@@ -14,9 +14,9 @@
     _initialized = true;
     string backendBase = Config["BackendBase"] ?? "";
     await JS.InvokeVoidAsync("SensorMap.init", _mapId, new {
-        backendBase,
-        center = new [] { 174.7633, -36.8485 }, // Auckland as default center
-        zoom = 5
+      backendBase,
+      center = new [] { 174.7633, -36.8485 }, // Auckland as default center
+      zoom = 5
     });
   }
 

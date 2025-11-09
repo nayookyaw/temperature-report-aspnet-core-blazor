@@ -1,33 +1,52 @@
-
 @using Frontend.Models
-@using System.Net.Http.Json
-@inject HttpClient Http
+@using Frontend.Services.SensorServiceApi
+@inject ISensorApiClient SensorApi
 
 @code {
     [Parameter] public EventCallback<(double lng, double lat)> OnJumpTo { get; set; }
+
     string? q;
     int page = 1;
     int pageSize = 50;
     PagedResult<SensorDto>? result;
     bool loading = false;
+    string? error;
+    CancellationTokenSource? _cts;
+
     protected override async Task OnInitializedAsync() => await Load();
-    
+
     async Task Load()
     {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+
         loading = true;
+        error = null;
         StateHasChanged();
-        string? qEncoded = string.IsNullOrWhiteSpace(q) ? "" : Uri.EscapeDataString(q);
-        string? url = $"api/v1/sensor/list?q={qEncoded}&page={page}&pageSize={pageSize}";
-        result = await Http.GetFromJsonAsync<PagedResult<SensorDto>>(url);
-        loading = false;
-        StateHasChanged();
+
+        try
+        {
+            result = await SensorApi.SearchSensorList(q, page, pageSize, _cts.Token);
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            result = new PagedResult<SensorDto>(Array.Empty<SensorDto>(), page, pageSize, 0);
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
     }
+
     async Task Search(ChangeEventArgs e)
     {
         q = e.Value?.ToString();
         page = 1;
         await Load();
     }
+
     async Task Select(SensorDto s)
     {
         await OnJumpTo.InvokeAsync((s.Longitude, s.Latitude));
@@ -39,7 +58,7 @@
         <input class="sensor-search" placeholder="Search sensors..." @oninput="Search" />
     </div>
 
-    @if (result is null || loading)
+    @if (loading)
     {
         <div class="sensor-empty">
             <div class="skeleton-line" style="width:70%"></div>
@@ -47,7 +66,13 @@
             <div class="skeleton-line" style="width:60%"></div>
         </div>
     }
-    else if (result.Items == null || result.Items.Count == 0)
+    else if (!string.IsNullOrWhiteSpace(error))
+    {
+        <div class="sensor-empty">
+            <p style="color:#b00020;">@error</p>
+        </div>
+    }
+    else if (result is null || result.Items is null || result.Items.Count == 0)
     {
         <div class="sensor-empty">
             <p>No sensors found.</p>
@@ -59,18 +84,18 @@
             @foreach (SensorDto sensor in result.Items)
             {
                 <button class="sensor-card" @onclick="() => Select(sensor)">
-                <div class="sensor-title">@sensor.Name</div>
-                <div class="sensor-meta">
-                    <span class="badge">MAC</span>
-                    <span class="mono">@sensor.MacAddress</span>
-                    <span class="dot">•</span>
-                    <span class="badge">SN</span>
-                    <span class="mono">@sensor.SerialNumber</span>
-                </div>
-                <div class="sensor-coords">
-                    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
-                    <span class="mono">@sensor.Longitude, @sensor.Latitude</span>
-                </div>
+                    <div class="sensor-title">@sensor.Name</div>
+                    <div class="sensor-meta">
+                        <span class="badge">MAC</span>
+                        <span class="mono">@sensor.MacAddress</span>
+                        <span class="dot">•</span>
+                        <span class="badge">SN</span>
+                        <span class="mono">@sensor.SerialNumber</span>
+                    </div>
+                    <div class="sensor-coords">
+                        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+                        <span class="mono">@sensor.Longitude, @sensor.Latitude</span>
+                    </div>
                 </button>
             }
         </div>
