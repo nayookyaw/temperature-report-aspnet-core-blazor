@@ -58,29 +58,7 @@ public class SensorService(
         };
         await _iSensorLogRepo.SaveSensor(newSensorLog);
     }
-
-    public async Task<ApiResponse> GetAllSensor(ListSensorRequestBody input)
-    {
-        IEnumerable<SensorDto> sensorList = await _iSensorRepo.GetAllSensor();
-        if (!sensorList.Any())
-        {
-            return ApiResponseFail.FailResponse("No sensor is found", 400);
-        }
-        return ApiResponse<IEnumerable<SensorDto>>.SuccessResponse(sensorList, "Sensor list has been retrieved", 200);
-    }
     
-    private static string MakeViewportKey(ViewportQuery q)
-    {
-        static double Q(double v) => Math.Round(v, 3); // keep some precision, but not too coarse
-        var s = (q.Search ?? "").Trim().ToLowerInvariant();
-
-        return $"vp:min({Q(q.MinLng)},{Q(q.MinLat)})"
-            + $":max({Q(q.MaxLng)},{Q(q.MaxLat)})"
-            + $":z{q.Zoom}"
-            + $":l{q.Limit}"
-            + $":s:{s}";
-    }
-
     public async Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync(ViewportQuery q)
     {
         var cacheKey = MakeViewportKey(q);
@@ -111,6 +89,34 @@ public class SensorService(
         // });
     }
 
-    public Task<IEnumerable<SensorDto>> SearchAsync(string q, int limit)
-        => _iSensorRepo.SearchAsync(q, limit);
+    public async Task<ApiResponse<PagedResult<SensorDto>>> SearchSensorListAsync(ListSensorRequestBody input)
+    {
+        var page = input.Page;
+        var pageSize = input.PageSize;
+        var (sensorList, total) = await _iSensorRepo.SearchSensorListAsync(input.SearchText, page, pageSize);
+        var payload = new PagedResult<SensorDto>
+        {
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = total,
+            Items = sensorList.ToList()
+        };
+        return ApiResponse<PagedResult<SensorDto>>.SuccessResponse(
+            payload,
+            "Sensor list has been retrieved",
+            200
+        );
+    }
+    
+    private static string MakeViewportKey(ViewportQuery q)
+    {
+        static double Q(double v) => Math.Round(v, 3); // keep some precision, but not too coarse
+        var s = (q.Search ?? "").Trim().ToLowerInvariant();
+
+        return $"vp:min({Q(q.MinLng)},{Q(q.MinLat)})"
+            + $":max({Q(q.MaxLng)},{Q(q.MaxLat)})"
+            + $":z{q.Zoom}"
+            + $":l{q.Limit}"
+            + $":s:{s}";
+    }
 }

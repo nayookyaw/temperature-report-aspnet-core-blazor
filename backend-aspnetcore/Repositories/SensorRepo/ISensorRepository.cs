@@ -9,7 +9,8 @@ public interface ISensorRepository
     public Task<Sensor> SaveSensor(Sensor newSensor);
     public Task<Sensor> UpdateSensor(Sensor sensor);
     public Task<Sensor?> GetSensorByMacAddress(string macAddress);
-    public Task<IEnumerable<SensorDto>> GetAllSensor(CancellationToken ct = default);
     Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync(ViewportQuery q);
-    Task<IEnumerable<SensorDto>> SearchAsync(string q, int limit);
+    public Task<(IEnumerable<SensorDto> Items, long TotalCount)> SearchSensorListAsync(
+        string? searchText, int page, int pageSize, CancellationToken ct = default
+    );
 }

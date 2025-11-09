@@ -26,27 +26,8 @@ public class SensorController(ISensorService iSensorService) : ControllerBase
     [HttpGet("list")]
     public async Task<IActionResult> List([FromQuery] ListSensorRequestBody queryParams)
     {
-        string searchText = queryParams.SearchText ?? string.Empty;
-        int page = queryParams.Page;
-        int pageSize = queryParams.PageSize;
-        
-        page = Math.Max(page, 1);
-        pageSize = pageSize is < 1 or > 200 ? 50 : pageSize;
-
-        var allSensor = await _iSensorService.SearchAsync(searchText, int.MaxValue);
-        var total = allSensor.Count();
-
-        var items = allSensor.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-        var result = new PagedResult<SensorDto>
-        {
-            Page = page,
-            PageSize = pageSize,
-            TotalCount = total,
-            Items = items
-        };
-
-        return Ok(result);
+        var resp = await _iSensorService.SearchSensorListAsync(queryParams);
+        return StatusCode(resp.StatusCode, resp);
     }
 
     // GET v1/sensor/viewport?minLng=&minLat=&maxLng=&maxLat=&zoom=&limit=&search=
