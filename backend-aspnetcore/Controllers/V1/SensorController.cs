@@ -45,4 +45,19 @@ public class SensorController(ISensorService iSensorService) : ControllerBase
 
         return Ok(result);
     }
+
+    // GET v1/sensor/viewport?minLng=&minLat=&maxLng=&maxLat=&zoom=&limit=&search=
+    [HttpGet("viewport")]
+    public async Task<IActionResult> Viewport([FromQuery] double minLng, [FromQuery] double minLat,
+                                              [FromQuery] double maxLng, [FromQuery] double maxLat,
+                                              [FromQuery] int zoom, [FromQuery] int limit = 1000,
+                                              [FromQuery] string? search = null)
+    {
+        var result = await _iSensorService.GetSensorsInViewportAsync(new ViewportQuery
+        {
+            MinLng = minLng, MinLat = minLat, MaxLng = maxLng, MaxLat = maxLat,
+            Zoom = zoom, Limit = Math.Clamp(limit, 100, 20000), Search = search
+        });
+        return Ok(result);
+    }
 }
