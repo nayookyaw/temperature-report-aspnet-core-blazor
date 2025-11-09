@@ -36,21 +36,21 @@ async function fetchViewport() {
       inflight.signal
     );
 
-    const features = Array.isArray(items) ? items.map(it => {
-      const id = it.Id ?? it.id;
-      const name = it.Name ?? it.name ?? 'Sensor';
-      const mac = it.MacAddress ?? it.macAddress ?? '';
-      const status = it.Status ?? it.status ?? 'Unknown';
-      const serial = it.SerialNumber ?? it.serialNumber ?? '';
-      const temperature = it.Temperature ?? it.temperature ?? null;
-      const humidity = it.Humidity ?? it.humidity ?? null;
-      const lastSeen = it.LastSeenAt ?? it.lastSeenAt ?? null;
+    const features = Array.isArray(items) ? items.map(item => {
+      const id = item.id;
+      const name = item.name ?? 'Sensor';
+      const mac = item.macAddress ?? '';
+      const status = item.status ?? 'Unknown';
+      const serial = item.serialNumber ?? '';
+      const temperature = item.temperature ?? null;
+      const humidity = item.humidity ?? null;
+      const lastSeen = item.lastSeenAt ?? null;
 
       return {
         type: 'Feature',
         id,
         properties: { id, name, mac, status, serial, temperature, humidity, lastSeen },
-        geometry: { type: 'Point', coordinates: [it.Longitude ?? it.longitude, it.Latitude ?? it.latitude] }
+        geometry: { type: 'Point', coordinates: [item.Longitude ?? item.longitude, item.Latitude ?? item.latitude] }
       };
     }) : [];
 
