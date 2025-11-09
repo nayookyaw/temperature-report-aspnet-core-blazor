@@ -30,6 +30,8 @@
 - Validation - FluentValidation [used], Optional - Data Annotations
 
 # Frontend
-
+`dotnet restore`
+`dotnet build`
+`dotnet run`
 
 ## Notes
