@@ -7,27 +7,6 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
-<div class="layout">
-  <div class="left">
-    <div class="search">
-      <input @bind="query" @bind:event="oninput" placeholder="Search for sensors..." style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px" />
-    </div>
-    <div class="list">
-      @if (searching) {
-        <div style="padding:8px">Searching...</div>
-      }
-      @foreach (SensorDto sensor in results)
-      {
-        <div class="item" @onclick="() => Select(sensor)">
-          <div style="font-weight:600">@sensor.Name</div>
-          <div style="font-size:12px;color:#555">@sensor.MacAddress</div>
-          <div style="font-size:12px;color:#777">@sensor.Status</div>
-        </div>
-      }
-    </div>
-  </div>
-</div>
-
 @code {
   private string query = string.Empty;
   private List<SensorDto> results = new List<SensorDto>();
