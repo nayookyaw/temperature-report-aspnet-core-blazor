@@ -1,7 +1,7 @@
 
 using System.Net.Http.Json;
 
-namespace FrontendBlazor.Services;
+namespace Frontend.Services;
 
 public class ApiClient
 {

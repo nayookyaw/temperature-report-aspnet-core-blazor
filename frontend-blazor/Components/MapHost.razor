@@ -1,0 +1,27 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@inject IConfiguration Config
+
+<div id="@_mapId" style="width:100%;height:100%;"></div>
+
+@code {
+  private string _mapId = $"map-{Guid.NewGuid():N}";
+  private bool _initialized = false;
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (!firstRender || _initialized) return;
+    _initialized = true;
+    string backendBase = Config["BackendBase"] ?? "";
+    await JS.InvokeVoidAsync("SensorMap.init", _mapId, new {
+        backendBase,
+        center = new [] { 174.7633, -36.8485 }, // Auckland as default center
+        zoom = 5
+    });
+  }
+
+  public async Task FlyToAsync(double lng, double lat, int? zoom = null)
+  {
+    await JS.InvokeVoidAsync("SensorMap.flyTo", lng, lat, zoom);
+  }
+}

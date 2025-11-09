@@ -2,31 +2,31 @@
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
 @inject IConfiguration Config
+@using Frontend.Components
 
 <div class="map-layout">
   <div class="left-pane">
-    <Frontend.Components.SensorList OnJumpTo="JumpTo" />
+    <SensorList OnJumpTo="JumpTo" />
   </div>
-  <div id="map" class="map-pane"></div>
+  <div class="map-pane">
+    <MapHost @ref="_map" />
+  </div>
 </div>
 
 @code {
-  protected override async Task OnAfterRenderAsync(bool firstRender)
+  private MapHost? _map;
+
+  protected override Task OnAfterRenderAsync(bool firstRender)
   {
-    if (!firstRender) return;
-    // SensorMap will automatically fetch /api/v1/sensors/viewport when the map moves/zooms.
-    string? backendBase = Config["BackendBase"] ?? "";
-    await JS.InvokeVoidAsync("SensorMap.init", "map", new
-    {
-      backendBase,
-      center = new[] { 174.7633, -36.8485 }, // Auckland
-      zoom = 5
-    });
+    // Map init is handled by MapHost
+    return Task.CompletedTask;
   }
 
   private async Task JumpTo((double lng, double lat) pt)
   {
-    // Smooth pan/zoom to the sensor from the left panel
-    await JS.InvokeVoidAsync("SensorMap.flyTo", pt.lng, pt.lat);
+    if (_map is not null)
+    {
+      await _map.FlyToAsync(pt.lng, pt.lat);
+    }
   }
 }
