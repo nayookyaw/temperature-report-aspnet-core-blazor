@@ -4,7 +4,7 @@ namespace BackendAspNetCore.Dtos.Response;
 
 public class ApiResponseFail : ApiResponse
 {
-    public static ApiResponseFail FailResponse(string message, int statusCode = MessageConstants.BAD_REQUEST_CODE)
+    public static ApiResponseFail FailResponse(string message, int statusCode = StatusCodeConstants.BAD_REQUEST_CODE)
     {
         return new ApiResponseFail()
         {
