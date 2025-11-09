@@ -13,5 +13,11 @@ public interface ISensorRepository
     (
         string? searchText, int page, int pageSize, CancellationToken ct = default
     );
-    Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync(double minLng, double minLat, double maxLng, double maxLat, int zoom, int limit, string? search);
+    public Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync
+    (
+        double minLng, double minLat,
+        double maxLng, double maxLat,
+        int zoom, int limit, string? search,
+        CancellationToken ct = default
+    );
 }

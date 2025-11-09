@@ -49,21 +49,20 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
         string? searchText, int page, int pageSize, CancellationToken ct = default
     )
     {
-        IQueryable<Sensor> q = _db.Sensors
+        IQueryable<Sensor> query = _db.Sensors
             .AsNoTracking()
             .AsSplitQuery(); // to avoid Cartesian explosion
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
             var s = searchText.Trim();
-            q = q.Where(x =>
+            query = query.Where(x =>
                 x.MacAddress.StartsWith(s) ||
                 x.SerialNumber.StartsWith(s));
         }
 
-        var total = await q.LongCountAsync(ct);
-
-        var items = await q
+        var total = await query.LongCountAsync(ct);
+        var items = await query
             .OrderBy(s => s.MacAddress)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -72,23 +71,38 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
 
         return (items, total);
     }
-    
-    public async Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync(double minLng, double minLat, double maxLng, double maxLat, int zoom, int limit, string? search)
+
+    public async Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync
+    (
+        double minLng, double minLat,
+        double maxLng, double maxLat,
+        int zoom, int limit, string? search,
+        CancellationToken ct = default
+    )
     {
-        var query = _db.Sensors
+        IQueryable<Sensor> query = _db.Sensors
             .AsNoTracking()
-            .Where(s => s.Longitude >= minLng && s.Longitude <= maxLng
-                        && s.Latitude >= minLat && s.Latitude <= maxLat);
+            .Where(s =>
+                s.Longitude >= minLng && s.Longitude <= maxLng &&
+                s.Latitude >= minLat && s.Latitude <= maxLat);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var s = search.Trim().ToLower();
-            query = query.Where(x => x.Name.ToLower().Contains(s) || x.MacAddress.ToLower().Contains(s));
+            var s = search.Trim();
+
+            // ✅ Avoid ToLower() — use EF.Functions.Like for index-friendly search
+            query = query.Where(x =>
+                EF.Functions.Like(x.Name, $"%{s}%") ||
+                EF.Functions.Like(x.MacAddress, $"%{s}%"));
         }
 
+        // ✅ Explicit ordering required for pagination or Take
         query = query.OrderByDescending(s => s.LastSeenAt);
-        if (limit > 0) query = query.Take(limit);
 
+        if (limit > 0)
+            query = query.Take(limit);
+
+        // ✅ Project only needed fields — fast and lean
         return await query
             .Select(s => new SensorDto
             {
@@ -99,6 +113,7 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
                 Longitude = s.Longitude,
                 Status = s.Status,
                 LastSeenAt = s.LastSeenAt
-            }).ToListAsync();
+            })
+            .ToListAsync(ct);
     }
 }
