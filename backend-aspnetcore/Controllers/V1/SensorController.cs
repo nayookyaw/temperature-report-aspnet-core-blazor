@@ -18,7 +18,9 @@ public class SensorController(ISensorService iSensorService) : ControllerBase
     // POST v1/sensor
     [HttpPost]
     public async Task<IActionResult> Save([FromBody] AddSensorRequestBody input)
-        => StatusCode((await _iSensorService.SaveOrUpdateSensor(input)).StatusCode);
+    {
+        return StatusCode((await _iSensorService.SaveOrUpdateSensor(input)).StatusCode);
+    }
 
     // GET v1/sensor/list?q=&page=1&pageSize=50
     [HttpGet("list")]
@@ -43,60 +45,4 @@ public class SensorController(ISensorService iSensorService) : ControllerBase
 
         return Ok(result);
     }
-
-    // GET v1/sensor/geojson?take=10000&q=abc
-    [HttpGet("geojson")]
-    public async Task<IActionResult> GeoJson([FromQuery] int take = 10000, [FromQuery] string? q = null)
-    {
-        var items = await _iSensorService.SearchAsync(q ?? string.Empty, take);
-        var features = new JsonArray();
-        foreach (var s in items)
-        {
-            if (double.IsNaN(s.Latitude) || double.IsNaN(s.Longitude)) continue;
-            var feature = new JsonObject
-            {
-                ["type"] = "Feature",
-                ["geometry"] = new JsonObject
-                {
-                    ["type"] = "Point",
-                    ["coordinates"] = new JsonArray(s.Longitude, s.Latitude)
-                },
-                ["properties"] = new JsonObject
-                {
-                    ["id"] = s.Id.ToString(),
-                    ["name"] = s.Name,
-                    ["mac"] = s.MacAddress,
-                    ["status"] = s.Status,
-                    ["lastSeenAt"] = (s.LastSeenAt ?? s.LastUpdatedUtc).ToString("o")
-                }
-            };
-            features.Add(feature);
-        }
-        var fc = new JsonObject
-        {
-            ["type"] = "FeatureCollection",
-            ["features"] = features
-        };
-        return Ok(fc);
-    }
-
-    // GET v1/sensor/viewport?minLng=&minLat=&maxLng=&maxLat=&zoom=&limit=&search=
-    [HttpGet("viewport")]
-    public async Task<IActionResult> Viewport([FromQuery] double minLng, [FromQuery] double minLat,
-                                              [FromQuery] double maxLng, [FromQuery] double maxLat,
-                                              [FromQuery] int zoom, [FromQuery] int limit = 1000,
-                                              [FromQuery] string? search = null)
-    {
-        var result = await _iSensorService.GetSensorsInViewportAsync(new ViewportQuery
-        {
-            MinLng = minLng, MinLat = minLat, MaxLng = maxLng, MaxLat = maxLat,
-            Zoom = zoom, Limit = Math.Clamp(limit, 100, 20000), Search = search
-        });
-        return Ok(result);
-    }
-
-    // GET v1/sensor/search?q=&limit=50
-    [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string? q, [FromQuery] int limit = 50)
-        => Ok(await _iSensorService.SearchAsync(q ?? string.Empty, Math.Clamp(limit, 5, 200)));
 }
