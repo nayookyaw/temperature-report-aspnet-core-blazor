@@ -12,17 +12,17 @@
 
 # Backend
 * Migration EF Core Migration
-`dotnet tool install --global dotnet-ef`
+`dotnet tool install --global dotnet-ef` <br>
 
 * Sync migrations for the first time
- `dotnet ef migrations add SyncModel_20251108`
+ `dotnet ef migrations add SyncModel_20251108` <br>
 
-`dotnet ef migrations add InitialCreate` (run this comment only there is no files in Migration folder)
-`dotnet ef database update`
+`dotnet ef migrations add InitialCreate` (run this comment only there is no files in Migration folder) <br>
+`dotnet ef database update` <br>
 
 * Run the backend
-`dotnet build`
-`dotnet run`
+`dotnet build` <br>
+`dotnet run` <br>
 
 # Dependencies
 - Testing - Moq + xUnit
@@ -30,8 +30,8 @@
 - Validation - FluentValidation [used], Optional - Data Annotations
 
 # Frontend
-`dotnet restore`
-`dotnet build`
-`dotnet run`
+`dotnet restore` <br>
+`dotnet build` <br>
+`dotnet run` <br>
 
 ## Notes
