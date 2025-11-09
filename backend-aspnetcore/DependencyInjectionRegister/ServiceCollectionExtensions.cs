@@ -29,8 +29,7 @@ public static class ServiceCollectionExtensions
 
         // 3) Register classes whose interface matches I{ClassName}
         foreach (var asm in assemblies)
-        {
-            
+        {            
             Type[] types;
             try
             {
@@ -57,7 +56,6 @@ public static class ServiceCollectionExtensions
                 }
             }
         }
-
         return services;
     }
 }

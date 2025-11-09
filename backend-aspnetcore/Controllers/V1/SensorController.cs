@@ -2,9 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using BackendAspNetCore.Services.SensorServices;
 using BackendAspNetCore.RequestBody.Sensor;
-using BackendAspNetCore.Dtos.Sensor;
-using BackendAspNetCore.Dtos.Response;
-using System.Text.Json.Nodes;
 
 namespace BackendAspNetCore.Controllers.V1;
 

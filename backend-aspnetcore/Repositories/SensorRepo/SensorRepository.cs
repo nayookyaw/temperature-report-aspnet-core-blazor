@@ -49,19 +49,22 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
         string? searchText, int page, int pageSize, CancellationToken ct = default
     )
     {
-        IQueryable<Sensor> q = _db.Sensors.AsNoTracking();
+        IQueryable<Sensor> q = _db.Sensors
+            .AsNoTracking()
+            .AsSplitQuery(); // to avoid Cartesian explosion
 
         if (!string.IsNullOrWhiteSpace(searchText))
         {
-            var s = searchText.Trim().ToLower();
+            var s = searchText.Trim();
             q = q.Where(x =>
-                x.MacAddress.ToLower().Contains(s) ||
-                x.SerialNumber.ToLower().Contains(s));
+                x.MacAddress.StartsWith(s) ||
+                x.SerialNumber.StartsWith(s));
         }
 
         var total = await q.LongCountAsync(ct);
 
         var items = await q
+            .OrderBy(s => s.MacAddress)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ProjectTo<SensorDto>(_mapper.ConfigurationProvider)
