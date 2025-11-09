@@ -8,6 +8,7 @@ using BackendAspNetCore.Dtos.Response;
 using BackendAspNetCore.Utils;
 using BackendAspNetCore.RequestBody.Sensor;
 using ZiggyCreatures.Caching.Fusion;
+using backend_aspnetcore.Constants;
 
 namespace BackendAspNetCore.Services.SensorServices;
 
@@ -33,7 +34,7 @@ public class SensorService(
             await _iSensorRepo.UpdateSensor(existSensor);
             sensorDto = SensorMapper.ToDto(existSensor);
             SaveSensorLog(existSensor);
-            return ApiResponse<SensorDto>.SuccessResponse(sensorDto, "Sensor has been updated", 200);
+            return ApiResponse<SensorDto>.SuccessResponse(sensorDto, "Sensor has been updated", MessageConstants.SUCCESS_CODE);
         }
         var newSensor = new Sensor
         {
@@ -45,7 +46,7 @@ public class SensorService(
         Sensor sensor = await _iSensorRepo.SaveSensor(newSensor);
         sensorDto = SensorMapper.ToDto(sensor);
         SaveSensorLog(sensor);
-        return ApiResponse<SensorDto>.SuccessResponse(sensorDto, "New sensor has been added", 200);
+        return ApiResponse<SensorDto>.SuccessResponse(sensorDto, "New sensor has been added", MessageConstants.SUCCESS_CODE);
     }
 
     private async void SaveSensorLog(Sensor sensor)
@@ -74,7 +75,7 @@ public class SensorService(
         return ApiResponse<PagedResult<SensorDto>>.SuccessResponse(
             payload,
             "Sensor list has been retrieved",
-            200
+            MessageConstants.SUCCESS_CODE
         );
     }
     
@@ -101,7 +102,7 @@ public class SensorService(
             return ApiResponse<IEnumerable<SensorDto>>.SuccessResponse(
                 cached.Value,
                 "Retrieved from cache",
-                200
+                MessageConstants.SUCCESS_CODE
             );
         }
 
@@ -111,7 +112,7 @@ public class SensorService(
         return ApiResponse<IEnumerable<SensorDto>>.SuccessResponse(
             sensorList,
             "Sensor list in viewport has been retrieved",
-            200
+            MessageConstants.SUCCESS_CODE
         );
     }
     

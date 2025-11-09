@@ -1,4 +1,6 @@
 
+using backend_aspnetcore.Constants;
+
 namespace BackendAspNetCore.Dtos.Response;
 
 public class ApiResponse<T> : ApiResponse
@@ -6,7 +8,7 @@ public class ApiResponse<T> : ApiResponse
     public T? Data { get; set; }
 
     // Factory helpers
-    public static ApiResponse<T> SuccessResponse(T data, string message = "Success", int statusCode = 200)
+    public static ApiResponse<T> SuccessResponse(T data, string message = "Success", int statusCode = MessageConstants.SUCCESS_CODE)
     {
         return new ApiResponse<T>
         {
