@@ -12,10 +12,10 @@ public sealed class SensorApiClient : ISensorApiClient
         _http = http;
     }
 
-    public async Task<PagedResult<SensorDto>> SearchSensorList(string? q, int page, int pageSize, CancellationToken ct = default)
+    public async Task<PagedResult<SensorDto>> SearchSensorList(string? searchText, int page, int pageSize, CancellationToken ct = default)
     {
-        var qEncoded = string.IsNullOrWhiteSpace(q) ? "" : Uri.EscapeDataString(q);
-        var sensorListEndpoint = $"v1/sensor/list?q={qEncoded}&page={page}&pageSize={pageSize}";
+        var searchTextEncoded = string.IsNullOrWhiteSpace(searchText) ? "" : Uri.EscapeDataString(searchText);
+        var sensorListEndpoint = $"v1/sensor/list?searchText={searchTextEncoded}&page={page}&pageSize={pageSize}";
 
         // If backend returns null or malformed JSON, protect the UI
         var result = await _http.GetFromJsonAsync<PagedResult<SensorDto>>(sensorListEndpoint, ct);

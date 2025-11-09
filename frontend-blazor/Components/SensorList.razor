@@ -5,7 +5,7 @@
 @code {
     [Parameter] public EventCallback<(double lng, double lat)> OnJumpTo { get; set; }
 
-    string? q;
+    string? searchText;
     int page = 1;
     int pageSize = 50;
     PagedResult<SensorDto>? result;
@@ -26,7 +26,7 @@
 
         try
         {
-            result = await SensorApi.SearchSensorList(q, page, pageSize, _cts.Token);
+            result = await SensorApi.SearchSensorList(searchText, page, pageSize, _cts.Token);
         }
         catch (Exception ex)
         {
@@ -42,7 +42,7 @@
 
     async Task Search(ChangeEventArgs e)
     {
-        q = e.Value?.ToString();
+        searchText = e.Value?.ToString();
         page = 1;
         await Load();
     }

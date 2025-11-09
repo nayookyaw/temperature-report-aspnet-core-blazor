@@ -14,7 +14,7 @@ window.SensorApi = (function () {
             limit: String(limit)
         });
 
-        const sensorViewPortEndpoint = `${backendBase}v1/sensors/viewport?${params.toString()}`;
+        const sensorViewPortEndpoint = `${backendBase}v1/sensor/viewport?${params.toString()}`;
 
         const res = await fetch(sensorViewPortEndpoint, { signal });
         if (!res.ok) {
