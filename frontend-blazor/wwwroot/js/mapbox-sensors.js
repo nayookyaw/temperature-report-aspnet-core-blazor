@@ -26,47 +26,43 @@ window.SensorMap = (function () {
       inflight.abort();
     }
     inflight = new AbortController();
-
-    const params = new URLSearchParams({
-      minLng: b.getWest().toFixed(6),
-      minLat: b.getSouth().toFixed(6),
-      maxLng: b.getEast().toFixed(6),
-      maxLat: b.getNorth().toFixed(6),
-      zoom: Math.round(z),
-      limit: 10000
-    });
-
-    const url = `${backendBase}/v1/sensors/viewport?${params.toString()}`;
-    // console.log (url)
-
     try {
-      const res = await fetch(url, { signal: inflight.signal });
-      if (!res.ok) {
-        console.error('viewport fetch failed', res.status, await res.text());
-        return;
-      }
-      const items = await res.json();
+      const items = await window.SensorApi.getSensorsInViewport(
+        backendBase,
+        {
+          minLng: b.getWest().toFixed(6),
+          minLat: b.getSouth().toFixed(6),
+          maxLng: b.getEast().toFixed(6),
+          maxLat: b.getNorth().toFixed(6),
+          zoom: Math.round(z),
+          limit: 10000
+        },
+        inflight.signal
+      );
 
       const features = Array.isArray(items) ? items.map(it => {
-      const id = it.Id ?? it.id;
-      const name = it.Name ?? it.name ?? 'Sensor';
-      const mac = it.MacAddress ?? it.macAddress ?? '';
-      const status = it.Status ?? it.status ?? 'Unknown';
-      const serial = it.SerialNumber ?? it.serialNumber ?? '';
-      const temperature = it.Temperature ?? it.temperature ?? null;
-      const humidity = it.Humidity ?? it.humidity ?? null;
-      const lastSeen = it.LastSeenAt ?? it.lastSeenAt ?? null;
+        const id = it.Id ?? it.id;
+        const name = it.Name ?? it.name ?? 'Sensor';
+        const mac = it.MacAddress ?? it.macAddress ?? '';
+        const status = it.Status ?? it.status ?? 'Unknown';
+        const serial = it.SerialNumber ?? it.serialNumber ?? '';
+        const temperature = it.Temperature ?? it.temperature ?? null;
+        const humidity = it.Humidity ?? it.humidity ?? null;
+        const lastSeen = it.LastSeenAt ?? it.lastSeenAt ?? null;
 
-      return {
-        type: 'Feature',
-        id, // feature id (for selected point)
-        properties: { id, name, mac, status, serial, temperature, humidity, lastSeen },
-        geometry: { type: 'Point', coordinates: [it.Longitude ?? it.longitude, it.Latitude ?? it.latitude] }
-      };
-    }) : [];
+        return {
+          type: 'Feature',
+          id,
+          properties: { id, name, mac, status, serial, temperature, humidity, lastSeen },
+          geometry: {
+            type: 'Point',
+            coordinates: [it.Longitude ?? it.longitude, it.Latitude ?? it.latitude]
+          }
+        };
+      }) : [];
 
-      const src = map.getSource(sourceId);
       const geojson = { type: 'FeatureCollection', features };
+      const src = map.getSource(sourceId);
       if (src) src.setData(geojson);
     } catch (err) {
       if (err.name !== 'AbortError') {
@@ -83,7 +79,7 @@ window.SensorMap = (function () {
   }
 
   function init(containerId, options) {
-    backendBase = (options.backendBase || '')?.replace(/\/+$/, ''); // trim trailing /
+    backendBase = (options.backendBase || '')
     mapboxgl.accessToken = window.__MAPBOX_TOKEN__;
     map = new mapboxgl.Map({
       container: containerId,
@@ -207,12 +203,6 @@ window.SensorMap = (function () {
         const hum = p.humidity ?? null;
         const lastSeen = p.lastSeen || '';
 
-        // Map status -> badge class
-        const statusCls =
-          /ok|online|active|healthy/i.test(status) ? 'ok' :
-          /warn|degrad|unstable/i.test(status) ? 'warn' :
-          /err|down|offline|alarm|fault/i.test(status) ? 'err' : 'unknown';
-
         const id = `sensor-${p.id || Math.random().toString(36).slice(2)}`;
 
         const html = `
@@ -220,7 +210,7 @@ window.SensorMap = (function () {
             <div class="sp-header">
               <div class="sp-title">${escapeHtml(title)}</div>
               <div class="sp-right">
-                <span class="sp-badge ${statusCls}">${escapeHtml(status)}</span>
+                <span class="sp-badge warn">${escapeHtml(status)}</span>
                 <button id="${id}-close" class="sp-x" aria-label="Close">×</button>
               </div>
             </div>
@@ -253,10 +243,10 @@ window.SensorMap = (function () {
           if (det) det.addEventListener('click', () => {
             window.dispatchEvent(new CustomEvent('sensor:details', { detail: { id: p.id } }));
           });
-          const x   = document.getElementById(`${id}-close`);
-          if (x) x.addEventListener('click', () => {
+          const closeBtn = document.getElementById(`${id}-close`);
+          if (closeBtn) closeBtn.addEventListener('click', () => {
             // find the nearest popup container and remove it
-            const el = x.closest('.mapboxgl-popup');
+            const el = closeBtn.closest('.mapboxgl-popup');
             if (el && el.parentNode) el.parentNode.removeChild(el);
           });
         }, 0);
@@ -305,7 +295,9 @@ window.SensorMap = (function () {
       const d = new Date(iso);
       if (isNaN(d.getTime())) return '';
       return d.toLocaleString();
-    } catch { return ''; }
+    } catch { 
+      return ''; 
+    }
   }
 
   function flyTo(lng, lat, zoom) {
