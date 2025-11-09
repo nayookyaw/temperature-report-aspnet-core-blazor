@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using FluentValidation.AspNetCore;
 using FluentValidation;
 using BackendAspNetCore.Mappers;
-using ZiggyCreatures.Caching.Fusion; // FusionCache
+using ZiggyCreatures.Caching.Fusion;
+using System.Text.Json; // FusionCache
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +72,14 @@ builder.Services.AddAutoMapper(typeof(SensorProfile).Assembly);
 builder.Services.AddMemoryCache();
 // FusionCache default instance (so can inject IFusionCache)
 builder.Services.AddFusionCache();
+
+// Configure JSON serialization options (camelCase)
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+    });
 
 var app = builder.Build();
 

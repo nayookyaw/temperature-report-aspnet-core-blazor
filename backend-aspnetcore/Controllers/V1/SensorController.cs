@@ -22,18 +22,21 @@ public class SensorController(ISensorService iSensorService) : ControllerBase
         return StatusCode((await _iSensorService.SaveOrUpdateSensor(input)).StatusCode);
     }
 
-    // GET v1/sensor/list?q=&page=1&pageSize=50
+    // GET v1/sensor/list?searchText=&page=1&pageSize=50
     [HttpGet("list")]
-    public async Task<IActionResult> List([FromQuery] string? q, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    public async Task<IActionResult> List([FromQuery] ListSensorRequestBody queryParams)
     {
-        var query = (q ?? string.Empty).Trim();
+        string searchText = queryParams.SearchText ?? string.Empty;
+        int page = queryParams.Page;
+        int pageSize = queryParams.PageSize;
+        
         page = Math.Max(page, 1);
         pageSize = pageSize is < 1 or > 200 ? 50 : pageSize;
 
-        var all = await _iSensorService.SearchAsync(query, int.MaxValue);
-        var total = all.Count();
+        var allSensor = await _iSensorService.SearchAsync(searchText, int.MaxValue);
+        var total = allSensor.Count();
 
-        var items = all.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+        var items = allSensor.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
         var result = new PagedResult<SensorDto>
         {

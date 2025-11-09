@@ -47,6 +47,7 @@ public class SensorService(
         SaveSensorLog(sensor);
         return ApiResponse<SensorDto>.SuccessResponse(sensorDto, "New sensor has been added", 200);
     }
+    
     private async void SaveSensorLog(Sensor sensor)
     {
         var newSensorLog = new SensorLog
@@ -58,7 +59,7 @@ public class SensorService(
         await _iSensorLogRepo.SaveSensor(newSensorLog);
     }
 
-    public async Task<ApiResponse> GetAllSensor(GetAllSensorRequestBody input)
+    public async Task<ApiResponse> GetAllSensor(ListSensorRequestBody input)
     {
         IEnumerable<SensorDto> sensorList = await _iSensorRepo.GetAllSensor();
         if (!sensorList.Any())
