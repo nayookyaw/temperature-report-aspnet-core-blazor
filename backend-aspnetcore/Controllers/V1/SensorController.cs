@@ -19,29 +19,23 @@ public class SensorController(ISensorService iSensorService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Save([FromBody] AddSensorRequestBody input)
     {
-        return StatusCode((await _iSensorService.SaveOrUpdateSensor(input)).StatusCode);
+        var response = await _iSensorService.SaveOrUpdateSensor(input);
+        return StatusCode(response.StatusCode, response);
     }
 
     // GET v1/sensor/list?searchText=&page=1&pageSize=50
     [HttpGet("list")]
     public async Task<IActionResult> List([FromQuery] ListSensorRequestBody queryParams)
     {
-        var resp = await _iSensorService.SearchSensorListAsync(queryParams);
-        return StatusCode(resp.StatusCode, resp);
+        var response = await _iSensorService.SearchSensorListAsync(queryParams);
+        return StatusCode(response.StatusCode, response);
     }
 
     // GET v1/sensor/viewport?minLng=&minLat=&maxLng=&maxLat=&zoom=&limit=&search=
     [HttpGet("viewport")]
-    public async Task<IActionResult> Viewport([FromQuery] double minLng, [FromQuery] double minLat,
-                                              [FromQuery] double maxLng, [FromQuery] double maxLat,
-                                              [FromQuery] int zoom, [FromQuery] int limit = 1000,
-                                              [FromQuery] string? search = null)
+    public async Task<IActionResult> Viewport([FromQuery] ViewportSensorRequestBody queryParams)
     {
-        var result = await _iSensorService.GetSensorsInViewportAsync(new ViewportQuery
-        {
-            MinLng = minLng, MinLat = minLat, MaxLng = maxLng, MaxLat = maxLat,
-            Zoom = zoom, Limit = Math.Clamp(limit, 100, 20000), Search = search
-        });
-        return Ok(result);
+        var response = await _iSensorService.GetSensorsInViewportAsync(queryParams);
+        return StatusCode(response.StatusCode, response);
     }
 }

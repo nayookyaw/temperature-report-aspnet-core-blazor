@@ -7,6 +7,6 @@ namespace BackendAspNetCore.Services.SensorServices;
 public interface ISensorService
 {
     public Task<ApiResponse> SaveOrUpdateSensor(AddSensorRequestBody input);
-    public Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync(ViewportQuery q);
     public Task<ApiResponse<PagedResult<SensorDto>>> SearchSensorListAsync(ListSensorRequestBody input);
+    public Task<ApiResponse<IEnumerable<SensorDto>>> GetSensorsInViewportAsync(ViewportSensorRequestBody input);
 }

@@ -13,6 +13,13 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
     private readonly AppDbContext _db = db;
     private readonly IMapper _mapper = mapper;
 
+    public async Task<Sensor?> GetSensorByMacAddress(string macAddress)
+    {
+        return await _db.Sensors
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.MacAddress == macAddress);
+    }
+    
     public async Task<Sensor> SaveSensor(Sensor newSensor)
     {
         _db.Sensors.Add(newSensor);
@@ -27,13 +34,6 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
         return updateSensor;
     }
 
-    public async Task<Sensor?> GetSensorByMacAddress(string macAddress)
-    {
-        return await _db.Sensors
-            .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.MacAddress == macAddress);
-    }
-
     // public async Task<IEnumerable<SensorDto>> GetAllSensor(CancellationToken ct = default)
     // {
     //     return await _db.Sensors
@@ -44,8 +44,10 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
     //         .ToListAsync(ct);
     // }
 
-    public async Task<(IEnumerable<SensorDto> Items, long TotalCount)> SearchSensorListAsync(
-        string? searchText, int page, int pageSize, CancellationToken ct = default)
+    public async Task<(IEnumerable<SensorDto> Items, long TotalCount)> SearchSensorListAsync
+    (
+        string? searchText, int page, int pageSize, CancellationToken ct = default
+    )
     {
         IQueryable<Sensor> q = _db.Sensors.AsNoTracking();
 
@@ -53,16 +55,11 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
         {
             var s = searchText.Trim().ToLower();
             q = q.Where(x =>
-                x.Name.ToLower().Contains(s) ||
                 x.MacAddress.ToLower().Contains(s) ||
                 x.SerialNumber.ToLower().Contains(s));
         }
 
-        // Total first (no ordering/paging)
         var total = await q.LongCountAsync(ct);
-
-        // Order by freshness, then page
-        q = q.OrderByDescending(x => x.LastSeenAt);
 
         var items = await q
             .Skip((page - 1) * pageSize)
@@ -73,21 +70,21 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
         return (items, total);
     }
     
-    public async Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync(ViewportQuery q)
+    public async Task<IEnumerable<SensorDto>> GetSensorsInViewportAsync(double minLng, double minLat, double maxLng, double maxLat, int zoom, int limit, string? search)
     {
         var query = _db.Sensors
             .AsNoTracking()
-            .Where(s => s.Longitude >= q.MinLng && s.Longitude <= q.MaxLng
-                        && s.Latitude >= q.MinLat && s.Latitude <= q.MaxLat);
+            .Where(s => s.Longitude >= minLng && s.Longitude <= maxLng
+                        && s.Latitude >= minLat && s.Latitude <= maxLat);
 
-        if (!string.IsNullOrWhiteSpace(q.Search))
+        if (!string.IsNullOrWhiteSpace(search))
         {
-            var s = q.Search.Trim().ToLower();
+            var s = search.Trim().ToLower();
             query = query.Where(x => x.Name.ToLower().Contains(s) || x.MacAddress.ToLower().Contains(s));
         }
 
-        query = query.OrderByDescending(s => s.LastSeenAt); // prioritize fresh
-        if (q.Limit > 0) query = query.Take(q.Limit);
+        query = query.OrderByDescending(s => s.LastSeenAt);
+        if (limit > 0) query = query.Take(limit);
 
         return await query
             .Select(s => new SensorDto
