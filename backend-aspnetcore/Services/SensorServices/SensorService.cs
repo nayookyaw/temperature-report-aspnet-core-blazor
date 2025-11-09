@@ -34,7 +34,7 @@ public class SensorService(
             await _iSensorRepo.UpdateSensor(existSensor);
             sensorDto = SensorMapper.ToDto(existSensor);
             SaveSensorLog(existSensor);
-            return ApiResponse<SensorDto>.SuccessResponse(sensorDto, "Sensor has been updated", MessageConstants.SUCCESS_CODE);
+            return ApiResponse<SensorDto>.SuccessResponse(sensorDto, MessageConstants.SENSOR_UPDATED, StatusCodeConstants.SUCCESS_CODE);
         }
         var newSensor = new Sensor
         {
@@ -46,7 +46,7 @@ public class SensorService(
         Sensor sensor = await _iSensorRepo.SaveSensor(newSensor);
         sensorDto = SensorMapper.ToDto(sensor);
         SaveSensorLog(sensor);
-        return ApiResponse<SensorDto>.SuccessResponse(sensorDto, "New sensor has been added", MessageConstants.SUCCESS_CODE);
+        return ApiResponse<SensorDto>.SuccessResponse(sensorDto, MessageConstants.NEW_SENSOR_ADDED, StatusCodeConstants.SUCCESS_CODE);
     }
 
     private async void SaveSensorLog(Sensor sensor)
@@ -74,8 +74,8 @@ public class SensorService(
         };
         return ApiResponse<PagedResult<SensorDto>>.SuccessResponse(
             payload,
-            "Sensor list has been retrieved",
-            MessageConstants.SUCCESS_CODE
+            MessageConstants.SENSOR_LIST_RETRIEVED,
+            StatusCodeConstants.SUCCESS_CODE
         );
     }
     
@@ -101,8 +101,8 @@ public class SensorService(
             Console.WriteLine("Cache hit  ✅ ✅ ✅ ✅");
             return ApiResponse<IEnumerable<SensorDto>>.SuccessResponse(
                 cached.Value,
-                "Retrieved from cache",
-                MessageConstants.SUCCESS_CODE
+                MessageConstants.SENSOR_RETRIEVE_FROM_CACHE,
+                StatusCodeConstants.SUCCESS_CODE
             );
         }
 
@@ -111,8 +111,8 @@ public class SensorService(
         await _iFusionCache.SetAsync(cacheKey, sensorList, options);
         return ApiResponse<IEnumerable<SensorDto>>.SuccessResponse(
             sensorList,
-            "Sensor list in viewport has been retrieved",
-            MessageConstants.SUCCESS_CODE
+            MessageConstants.SENSOR_LIST_RETRIEVED,
+            StatusCodeConstants.SUCCESS_CODE
         );
     }
     
