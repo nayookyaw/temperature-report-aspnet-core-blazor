@@ -86,29 +86,19 @@ public class SensorRepository(AppDbContext db, IMapper mapper) : ISensorReposito
                 s.Longitude >= minLng && s.Longitude <= maxLng &&
                 s.Latitude >= minLat && s.Latitude <= maxLat);
 
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var s = search.Trim();
-
-            // ✅ Avoid ToLower() — use EF.Functions.Like for index-friendly search
-            query = query.Where(x =>
-                EF.Functions.Like(x.Name, $"%{s}%") ||
-                EF.Functions.Like(x.MacAddress, $"%{s}%"));
-        }
-
-        // ✅ Explicit ordering required for pagination or Take
-        query = query.OrderByDescending(s => s.LastSeenAt);
-
         if (limit > 0)
             query = query.Take(limit);
 
-        // ✅ Project only needed fields — fast and lean
+        // Project only needed fields — fast and lean
         return await query
             .Select(s => new SensorDto
             {
                 Id = s.Id,
                 Name = s.Name,
                 MacAddress = s.MacAddress,
+                SerialNumber = s.SerialNumber,
+                Temperature = s.Temperature,
+                Humidity = s.Humidity,
                 Latitude = s.Latitude,
                 Longitude = s.Longitude,
                 Status = s.Status,
