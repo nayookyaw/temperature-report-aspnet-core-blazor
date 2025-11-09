@@ -16,9 +16,10 @@ public sealed class SensorApiClient : ISensorApiClient
     {
         var searchTextEncoded = string.IsNullOrWhiteSpace(searchText) ? "" : Uri.EscapeDataString(searchText);
         var sensorListEndpoint = $"v1/sensor/list?searchText={searchTextEncoded}&page={page}&pageSize={pageSize}";
+        var envelope = await _http.GetFromJsonAsync<ApiResponse<PagedResult<SensorDto>>>(sensorListEndpoint, ct);
+        var payload = envelope?.Data 
+            ?? new PagedResult<SensorDto>(Array.Empty<SensorDto>(), page, pageSize, 0);
 
-        // If backend returns null or malformed JSON, protect the UI
-        var result = await _http.GetFromJsonAsync<PagedResult<SensorDto>>(sensorListEndpoint, ct);
-        return result ?? new PagedResult<SensorDto>(Array.Empty<SensorDto>(), page, pageSize, 0);
+        return payload;
     }
 }
