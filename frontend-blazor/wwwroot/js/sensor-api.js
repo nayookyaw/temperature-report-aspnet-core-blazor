@@ -1,15 +1,15 @@
-export async function getSensorsInViewport(backendBase, q, signal) {
-    const limit = typeof q.limit === "number" ? q.limit : 10000;
+export async function getSensorsInViewport(backendBase, queryParams, signal) {
+    const limit = typeof queryParams.limit === "number" ? queryParams.limit : 10000;
 
     // ensure consistent decimals
     const formatDecimal = v => Number(v).toFixed(6);
 
     const params = new URLSearchParams({
-        minLng: formatDecimal(q.minLng),
-        minLat: formatDecimal(q.minLat),
-        maxLng: formatDecimal(q.maxLng),
-        maxLat: formatDecimal(q.maxLat),
-        zoom: Math.round(q.zoom),
+        minLng: formatDecimal(queryParams.minLng),
+        minLat: formatDecimal(queryParams.minLat),
+        maxLng: formatDecimal(queryParams.maxLng),
+        maxLat: formatDecimal(queryParams.maxLat),
+        zoom: Math.round(queryParams.zoom),
         limit: String(limit)
     });
 

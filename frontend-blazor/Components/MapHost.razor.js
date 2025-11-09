@@ -23,7 +23,7 @@ async function fetchViewport() {
   if (inflight && typeof inflight.abort === 'function') inflight.abort();
   inflight = new AbortController();
   try {
-    const items = await getSensorsInViewport(
+    const response = await getSensorsInViewport(
       backendBase,
       {
         minLng: b.getWest().toFixed(6),
@@ -35,22 +35,23 @@ async function fetchViewport() {
       },
       inflight.signal
     );
+    const sensorList = response?.data || [];
 
-    const features = Array.isArray(items) ? items.map(item => {
-      const id = item.id;
-      const name = item.name ?? 'Sensor';
-      const mac = item.macAddress ?? '';
-      const status = item.status ?? 'Unknown';
-      const serial = item.serialNumber ?? '';
-      const temperature = item.temperature ?? null;
-      const humidity = item.humidity ?? null;
-      const lastSeen = item.lastSeenAt ?? null;
+    const features = Array.isArray(sensorList) ? sensorList.map(sensor => {
+      const id = sensor.id;
+      const name = sensor.name ?? 'Sensor';
+      const mac = sensor.macAddress ?? '';
+      const status = sensor.status ?? 'Unknown';
+      const serial = sensor.serialNumber ?? '';
+      const temperature = sensor.temperature ?? null;
+      const humidity = sensor.humidity ?? null;
+      const lastSeen = sensor.lastSeenAt ?? null;
 
       return {
         type: 'Feature',
         id,
         properties: { id, name, mac, status, serial, temperature, humidity, lastSeen },
-        geometry: { type: 'Point', coordinates: [item.Longitude ?? item.longitude, item.Latitude ?? item.latitude] }
+        geometry: { type: 'Point', coordinates: [sensor.Longitude ?? sensor.longitude, sensor.Latitude ?? sensor.latitude] }
       };
     }) : [];
 
