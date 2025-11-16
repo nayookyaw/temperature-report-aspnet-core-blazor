@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: myapp-web:latest
+    container_name: myapp-web
+    restart: "no"
+    ports:
+      - "5151:5151"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - backend
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ms-sql-docker-app
+    restart: "no"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Your_password123!
+    ports:
+      - "1433:1433"
+    networks:
+      - backend
+networks:
+  backend:
+    driver: bridge

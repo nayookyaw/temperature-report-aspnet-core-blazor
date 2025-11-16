@@ -8,7 +8,8 @@ using FluentValidation.AspNetCore;
 using FluentValidation;
 using BackendAspNetCore.Mappers;
 using ZiggyCreatures.Caching.Fusion;
-using System.Text.Json; // FusionCache
+using System.Text.Json;
+using BackendAspNetCore.Middlewares; // FusionCache
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -92,10 +93,14 @@ using (var scope = app.Services.CreateScope())
 
 app.UseCors();
 
+// Add Pod + Node headers
+app.UsePodInfoHeaders();
+
+// Apply migrations & seed demo data
+await SensorSeed.EnsureSeedAsync(app.Services, total: 10000);
+
 if (app.Environment.IsDevelopment())
 {
-    // Apply migrations & seed demo data (dev only)
-    await SensorSeed.EnsureSeedAsync(app.Services, total: 10000);
     
     app.UseSwagger();
     // Build a Swagger UI tab per API version
